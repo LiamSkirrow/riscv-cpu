@@ -1,5 +1,7 @@
 # a barebones example synth script, taken from https://stackoverflow.com/questions/31434380/what-is-a-good-template-yosys-synthesis-script
 
+# TODO: replace the top module name and library name with variables, makes it more generic when copying to different projects
+
 # read design, in the form of soft links in the rtl dir 
 read_verilog ./rtl 
 
