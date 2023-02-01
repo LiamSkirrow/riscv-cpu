@@ -1,0 +1,16 @@
+# a barebones example synth script, taken from https://stackoverflow.com/questions/31434380/what-is-a-good-template-yosys-synthesis-script
+
+# read design, in the form of soft links in the rtl dir 
+read_verilog ./rtl 
+
+# generic synthesis
+synth -top Top_Cpu
+
+# mapping to cmos_cells.lib, just as an example lib
+dfflibmap -liberty cmos_cells.lib
+abc -liberty cmos_cells.lib
+clean
+
+# write synthesized design
+write_verilog synth_netlist.v
+

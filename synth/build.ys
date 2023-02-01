@@ -1,0 +1,4 @@
+# compile the Verilog but don't do anything else, useful for syntax-checking
+
+# read design, in the form of soft links in the rtl dir
+read_verilog ./rtl
