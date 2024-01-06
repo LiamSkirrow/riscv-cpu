@@ -5,6 +5,7 @@
 
 SRC=src/
 TB=tb/
+CONF=config-files/
 CC=verilator
 
 alu_syntax:
@@ -14,14 +15,18 @@ alu_syntax:
 	@echo "DONE"
 
 alu:
+ifeq ($(WAVES), 1)
+	gtkwave $@_waves.fst -a $(CONF)$@.gtkw
+else
 	@echo ">>> Verilating alu..."
 	@echo
 	$(CC) -Wno-fatal --trace-fst --cc $(SRC)$@.v --exe $(TB)$@_tb.cpp
 	make -C obj_dir -f V$@.mk V$@
-ifeq ($(SIM),1)
+# ifeq ($(SIM),1)
 	@echo ">>> Simulating alu..."
 	@echo
 	./obj_dir/V$@
+# endif
 endif
 	@echo "DONE"
 
