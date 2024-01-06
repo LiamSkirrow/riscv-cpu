@@ -15,6 +15,11 @@ alu_syntax:
 	@echo "DONE"
 
 alu:
+ifeq ($(SYNTAX), 1)
+	@echo ">>> Syntax checking module: alu"
+	@echo
+	$(CC) -Wno-fatal --cc $(SRC)alu.v --lint-only
+else
 ifeq ($(WAVES), 1)
 	gtkwave $@_waves.fst -a $(CONF)$@.gtkw
 else
@@ -22,11 +27,10 @@ else
 	@echo
 	$(CC) -Wno-fatal --trace-fst --cc $(SRC)$@.v --exe $(TB)$@_tb.cpp
 	make -C obj_dir -f V$@.mk V$@
-# ifeq ($(SIM),1)
 	@echo ">>> Simulating alu..."
 	@echo
 	./obj_dir/V$@
-# endif
+endif
 endif
 	@echo "DONE"
 
