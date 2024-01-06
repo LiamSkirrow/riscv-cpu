@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
-[*] Sat Jan  6 19:47:42 2024
+[*] Sat Jan  6 19:57:14 2024
 [*]
 [dumpfile] "/home/liam.skirrow/Documents/code/riscv-cpu/alu_waves.fst"
-[dumpfile_mtime] "Sat Jan  6 19:45:54 2024"
-[dumpfile_size] 800
+[dumpfile_mtime] "Sat Jan  6 19:55:57 2024"
+[dumpfile_size] 885
 [savefile] "/home/liam.skirrow/Documents/code/riscv-cpu/config-files/alu.gtkw"
 [timestart] 0
 [size] 1848 1006
-[pos] -39 -39
-*-2.696658 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[pos] -1 -1
+*-1.569180 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [sst_width] 279
 [signals_width] 195
@@ -17,6 +17,7 @@
 [sst_vpaned_height] 300
 @28
 TOP.alu.CK_REF
+TOP.alu.RST_N
 TOP.alu.ALU_EN
 @22
 TOP.alu.A[31:0]
@@ -29,15 +30,16 @@ TOP.alu.CARRY_FLAG
 @22
 TOP.alu.OP_VAL[3:0]
 TOP.alu.OP_VAL_reg[3:0]
-TOP.alu.OUT[31:0]
 TOP.alu.OUT_next[32:0]
+TOP.alu.OUT[31:0]
 TOP.alu.OUT_reg[32:0]
 @28
 TOP.alu.OVERFLOW_FLAG
-TOP.alu.RST_N
 TOP.alu.ZERO_FLAG
+@29
+TOP.alu.alu_done_next
+@28
 TOP.alu.alu_done_ff
 TOP.alu.alu_done_ff_ff
-TOP.alu.alu_done_next
 [pattern_trace] 1
 [pattern_trace] 0

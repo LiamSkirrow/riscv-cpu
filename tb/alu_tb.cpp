@@ -18,6 +18,25 @@ int main(int argc, char** argv, char** env) {
     m_trace->open("alu_waves.fst");
 
     while (sim_time < MAX_SIM_TIME) {
+
+        if(sim_time == 0 && dut->CK_REF == 0)
+            dut->RST_N = 0;
+        else{
+            dut->RST_N = 1;
+            dut->OP_VAL = 1;
+            dut->A = 5;
+            dut->B = 7;
+            dut->ALU_EN = 1;
+        }
+        
+        if(sim_time == 2 && dut->CK_REF == 0){
+            // addition of 5 and 7
+            dut->OP_VAL = 1;
+            dut->A = 5;
+            dut->B = 7;
+            dut->ALU_EN = 1;
+        }
+
         dut->CK_REF ^= 1;
         dut->eval();
         m_trace->dump(sim_time);
