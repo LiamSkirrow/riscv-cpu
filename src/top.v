@@ -9,7 +9,7 @@
 //   to exist here so that the decode phase of the pipeline has a single-cycle execution rather than being purely combinatorial
 // ***
 
-module Control_Unit(
+module top(
     input wire CK_REF,
     input wire RST_N,
     input wire [31:0] INST_MEM_DATA_BUS,    // current instruction

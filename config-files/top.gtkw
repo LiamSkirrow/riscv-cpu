@@ -1,0 +1,108 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Sat Jan  6 22:29:18 2024
+[*]
+[dumpfile] "/home/liam.skirrow/Documents/code/riscv-cpu/top_waves.fst"
+[dumpfile_mtime] "Sat Jan  6 22:28:22 2024"
+[dumpfile_size] 1797
+[savefile] "/home/liam.skirrow/Documents/code/riscv-cpu/config-files/top.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] -1 -1
+*-2.696658 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[sst_width] 279
+[signals_width] 334
+[sst_expanded] 1
+[sst_vpaned_height] 158
+@28
+TOP.top.CK_REF
+@22
+TOP.top.INST_MEM_ADDRESS_BUS[31:0]
+TOP.top.INST_MEM_DATA_BUS[31:0]
+TOP.top.MEM_ACCESS_ADDRESS_BUS[15:0]
+TOP.top.MEM_ACCESS_DATA_IN_BUS[31:0]
+TOP.top.MEM_ACCESS_DATA_OUT_BUS[31:0]
+@28
+TOP.top.MEM_ACCESS_READ_WRN
+TOP.top.RST_N
+TOP.top.alu_carry_flag
+TOP.top.alu_done
+TOP.top.alu_en
+TOP.top.alu_en_reg
+@22
+TOP.top.alu_input_a[31:0]
+TOP.top.alu_input_a_reg[31:0]
+TOP.top.alu_input_b[31:0]
+@23
+TOP.top.alu_input_b_reg[31:0]
+@28
+TOP.top.alu_mem_operation_n_ff
+TOP.top.alu_mem_operation_n_ff_ff
+TOP.top.alu_mem_operation_n_ff_ff_ff
+TOP.top.alu_mem_operation_n_next
+@22
+TOP.top.alu_operation_code[3:0]
+TOP.top.alu_operation_code_reg[3:0]
+TOP.top.alu_out_reg_adjusted[31:0]
+TOP.top.alu_out_reg_ff[31:0]
+TOP.top.alu_out_reg_next[31:0]
+TOP.top.alu_output[31:0]
+@28
+TOP.top.alu_overflow_flag
+TOP.top.alu_zero_flag
+@22
+TOP.top.instruction_pointer_reg[31:0]
+@28
+TOP.top.int_rst_n
+@22
+TOP.top.ir_data_out[31:0]
+TOP.top.mem_access_address_bus[15:0]
+TOP.top.mem_access_data_out_bus[31:0]
+TOP.top.mem_access_data_out_bus_adjusted[31:0]
+@28
+TOP.top.mem_access_done
+TOP.top.mem_access_operation_ff[1:0]
+TOP.top.mem_access_operation_ff_ff[1:0]
+TOP.top.mem_access_operation_next[1:0]
+TOP.top.mem_access_read_wrn
+@22
+TOP.top.mem_data_adjusted[31:0]
+TOP.top.mem_data_ff[31:0]
+TOP.top.mem_data_next[31:0]
+TOP.top.pc_data_out[31:0]
+@28
+TOP.top.pipeline_flush_n_ff
+TOP.top.pipeline_flush_n_ff_ff
+TOP.top.pipeline_flush_n_ff_ff_ff
+TOP.top.pipeline_flush_n_ff_ff_ff_ff
+TOP.top.pipeline_flush_n_next
+@22
+TOP.top.program_counter_reg[31:0]
+TOP.top.rd_reg_offset[4:0]
+TOP.top.rd_reg_offset_ff[4:0]
+TOP.top.rd_reg_offset_ff_ff[4:0]
+TOP.top.rd_reg_offset_ff_ff_ff[4:0]
+TOP.top.rd_reg_offset_next[4:0]
+TOP.top.reg_data_in[31:0]
+@28
+TOP.top.reg_rd_wrn
+TOP.top.reg_wb_data_type_ff[2:0]
+TOP.top.reg_wb_data_type_ff_ff[2:0]
+TOP.top.reg_wb_data_type_ff_ff_ff[2:0]
+TOP.top.reg_wb_data_type_next[2:0]
+TOP.top.reg_wb_flag_ff
+TOP.top.reg_wb_flag_ff_ff
+TOP.top.reg_wb_flag_ff_ff_ff
+TOP.top.reg_wb_flag_next
+@22
+TOP.top.rs1_data_out[31:0]
+TOP.top.rs1_reg_offset[4:0]
+TOP.top.rs2_data_out[31:0]
+TOP.top.rs2_data_out_ff[31:0]
+TOP.top.rs2_data_out_ff_ff[31:0]
+TOP.top.rs2_data_out_ff_ff_ff[31:0]
+TOP.top.rs2_data_out_next[31:0]
+TOP.top.rs2_reg_offset[4:0]
+[pattern_trace] 1
+[pattern_trace] 0
