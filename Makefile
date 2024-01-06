@@ -8,10 +8,24 @@ TB=tb/
 CONF=config-files/
 CC=verilator
 
-alu_syntax:
-	@echo ">>> Compiling module: alu"
+Top_CPU:
+ifeq ($(SYNTAX), 1)
+	@echo ">>> Syntax checking module: Top_CPU"
 	@echo
-	$(CC) -Wno-fatal --cc $(SRC)alu.v --lint-only
+	$(CC) -Wno-fatal --cc $(SRC)*.v --lint-only
+else
+ifeq ($(WAVES), 1)
+	gtkwave $@_waves.fst -a $(CONF)$@.gtkw
+else
+	@echo ">>> Verilating Top_CPU..."
+	@echo
+	$(CC) -Wno-fatal --trace-fst --cc $(SRC)Top_CPU.v $(SRC)Control_Unit.v $(SRC)alu.v $(SRC)Register_File.v --exe $(TB)$@_tb.cpp
+	make -C obj_dir -f V$@.mk V$@
+	@echo ">>> Simulating Top_CPU..."
+	@echo
+	./obj_dir/V$@
+endif
+endif
 	@echo "DONE"
 
 alu:
@@ -33,6 +47,51 @@ else
 endif
 endif
 	@echo "DONE"
+
+Control_Unit:
+ifeq ($(SYNTAX), 1)
+	@echo ">>> Syntax checking module: Control_Unit"
+	@echo
+	$(CC) -Wno-fatal --cc $(SRC)Control_Unit.v $(SRC)alu.v $(SRC)Register_File.v --lint-only
+else
+ifeq ($(WAVES), 1)
+	gtkwave $@_waves.fst -a $(CONF)$@.gtkw
+else
+	@echo ">>> Verilating Control_Unit..."
+	@echo
+	$(CC) -Wno-fatal --trace-fst --cc $(SRC)Control_Unit.v $(SRC)alu.v $(SRC)Register_File.v --exe $(TB)$@_tb.cpp
+	make -C obj_dir -f V$@.mk V$@
+	@echo ">>> Simulating Control_Unit..."
+	@echo
+	./obj_dir/V$@
+endif
+endif
+	@echo "DONE"
+
+Register_File:
+ifeq ($(SYNTAX), 1)
+	@echo ">>> Syntax checking module: Register_File"
+	@echo
+	$(CC) -Wno-fatal --cc $(SRC)Register_File.v --lint-only
+else
+ifeq ($(WAVES), 1)
+	gtkwave $@_waves.fst -a $(CONF)$@.gtkw
+else
+	@echo ">>> Verilating Register_File..."
+	@echo
+	$(CC) -Wno-fatal --trace-fst --cc $(SRC)$@.v --exe $(TB)$@_tb.cpp
+	make -C obj_dir -f V$@.mk V$@
+	@echo ">>> Simulating Register_File..."
+	@echo
+	./obj_dir/V$@
+endif
+endif
+	@echo "DONE"
+
+
+# run a sequence of self-checking autotests
+test:
+
 
 .PHONY: clean
 clean:
