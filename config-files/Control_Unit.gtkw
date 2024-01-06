@@ -1,0 +1,107 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Sat Jan  6 20:26:57 2024
+[*]
+[dumpfile] "/home/liam.skirrow/Documents/code/riscv-cpu/Control_Unit_waves.fst"
+[dumpfile_mtime] "Sat Jan  6 20:26:37 2024"
+[dumpfile_size] 1806
+[savefile] "/home/liam.skirrow/Documents/code/riscv-cpu/config-files/Control_Unit.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] -1 -1
+*-2.696658 1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[sst_width] 279
+[signals_width] 334
+[sst_expanded] 1
+[sst_vpaned_height] 158
+@28
+TOP.Control_Unit.CK_REF
+@22
+TOP.Control_Unit.INST_MEM_ADDRESS_BUS[31:0]
+TOP.Control_Unit.INST_MEM_DATA_BUS[31:0]
+TOP.Control_Unit.MEM_ACCESS_ADDRESS_BUS[15:0]
+TOP.Control_Unit.MEM_ACCESS_DATA_IN_BUS[31:0]
+TOP.Control_Unit.MEM_ACCESS_DATA_OUT_BUS[31:0]
+@28
+TOP.Control_Unit.MEM_ACCESS_READ_WRN
+TOP.Control_Unit.RST_N
+TOP.Control_Unit.alu_carry_flag
+TOP.Control_Unit.alu_done
+TOP.Control_Unit.alu_en
+TOP.Control_Unit.alu_en_reg
+@22
+TOP.Control_Unit.alu_input_a[31:0]
+TOP.Control_Unit.alu_input_a_reg[31:0]
+TOP.Control_Unit.alu_input_b[31:0]
+TOP.Control_Unit.alu_input_b_reg[31:0]
+@28
+TOP.Control_Unit.alu_mem_operation_n_ff
+TOP.Control_Unit.alu_mem_operation_n_ff_ff
+TOP.Control_Unit.alu_mem_operation_n_ff_ff_ff
+TOP.Control_Unit.alu_mem_operation_n_next
+@22
+TOP.Control_Unit.alu_operation_code[3:0]
+TOP.Control_Unit.alu_operation_code_reg[3:0]
+TOP.Control_Unit.alu_out_reg_adjusted[31:0]
+TOP.Control_Unit.alu_out_reg_ff[31:0]
+TOP.Control_Unit.alu_out_reg_next[31:0]
+TOP.Control_Unit.alu_output[31:0]
+@28
+TOP.Control_Unit.alu_overflow_flag
+TOP.Control_Unit.alu_zero_flag
+@22
+TOP.Control_Unit.instruction_pointer_reg[31:0]
+@28
+TOP.Control_Unit.int_rst_n
+@22
+TOP.Control_Unit.ir_data_out[31:0]
+TOP.Control_Unit.mem_access_address_bus[15:0]
+TOP.Control_Unit.mem_access_data_out_bus[31:0]
+TOP.Control_Unit.mem_access_data_out_bus_adjusted[31:0]
+@28
+TOP.Control_Unit.mem_access_done
+TOP.Control_Unit.mem_access_operation_ff[1:0]
+TOP.Control_Unit.mem_access_operation_ff_ff[1:0]
+TOP.Control_Unit.mem_access_operation_next[1:0]
+TOP.Control_Unit.mem_access_read_wrn
+@22
+TOP.Control_Unit.mem_data_adjusted[31:0]
+TOP.Control_Unit.mem_data_ff[31:0]
+TOP.Control_Unit.mem_data_next[31:0]
+TOP.Control_Unit.pc_data_out[31:0]
+@28
+TOP.Control_Unit.pipeline_flush_n_ff
+TOP.Control_Unit.pipeline_flush_n_ff_ff
+TOP.Control_Unit.pipeline_flush_n_ff_ff_ff
+TOP.Control_Unit.pipeline_flush_n_ff_ff_ff_ff
+TOP.Control_Unit.pipeline_flush_n_next
+@22
+TOP.Control_Unit.program_counter_reg[31:0]
+TOP.Control_Unit.rd_reg_offset[4:0]
+TOP.Control_Unit.rd_reg_offset_ff[4:0]
+TOP.Control_Unit.rd_reg_offset_ff_ff[4:0]
+TOP.Control_Unit.rd_reg_offset_ff_ff_ff[4:0]
+TOP.Control_Unit.rd_reg_offset_next[4:0]
+TOP.Control_Unit.reg_data_in[31:0]
+@28
+TOP.Control_Unit.reg_rd_wrn
+TOP.Control_Unit.reg_wb_data_type_ff[2:0]
+TOP.Control_Unit.reg_wb_data_type_ff_ff[2:0]
+TOP.Control_Unit.reg_wb_data_type_ff_ff_ff[2:0]
+TOP.Control_Unit.reg_wb_data_type_next[2:0]
+TOP.Control_Unit.reg_wb_flag_ff
+TOP.Control_Unit.reg_wb_flag_ff_ff
+TOP.Control_Unit.reg_wb_flag_ff_ff_ff
+TOP.Control_Unit.reg_wb_flag_next
+@22
+TOP.Control_Unit.rs1_data_out[31:0]
+TOP.Control_Unit.rs1_reg_offset[4:0]
+TOP.Control_Unit.rs2_data_out[31:0]
+TOP.Control_Unit.rs2_data_out_ff[31:0]
+TOP.Control_Unit.rs2_data_out_ff_ff[31:0]
+TOP.Control_Unit.rs2_data_out_ff_ff_ff[31:0]
+TOP.Control_Unit.rs2_data_out_next[31:0]
+TOP.Control_Unit.rs2_reg_offset[4:0]
+[pattern_trace] 1
+[pattern_trace] 0

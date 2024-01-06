@@ -1,0 +1,40 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Sat Jan  6 20:11:56 2024
+[*]
+[dumpfile] "/home/liam.skirrow/Documents/code/riscv-cpu/Register_File_waves.fst"
+[dumpfile_mtime] "Sat Jan  6 20:11:36 2024"
+[dumpfile_size] 773
+[savefile] "/home/liam.skirrow/Documents/code/riscv-cpu/config-files/Register_File.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] -1 -1
+*-2.696658 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[sst_width] 279
+[signals_width] 182
+[sst_expanded] 1
+[sst_vpaned_height] 158
+@28
+TOP.Register_File.CK_REF
+@22
+TOP.Register_File.PC_DATA_OUT[31:0]
+TOP.Register_File.RD_REG_OFFSET[4:0]
+TOP.Register_File.REG_DATA_IN[31:0]
+@28
+TOP.Register_File.REG_RD_WRN
+@22
+TOP.Register_File.RS1_DATA_OUT[31:0]
+TOP.Register_File.RS1_REG_OFFSET[4:0]
+TOP.Register_File.RS2_DATA_OUT[31:0]
+TOP.Register_File.RS2_REG_OFFSET[4:0]
+@28
+TOP.Register_File.RST_N
+@420
+TOP.Register_File.i
+@22
+TOP.Register_File.pc_data_out[31:0]
+TOP.Register_File.rs1_data_out[31:0]
+TOP.Register_File.rs2_data_out[31:0]
+[pattern_trace] 1
+[pattern_trace] 0

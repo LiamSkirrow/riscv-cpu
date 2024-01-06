@@ -1,0 +1,62 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Sat Jan  6 20:41:18 2024
+[*]
+[dumpfile] "/home/liam.skirrow/Documents/code/riscv-cpu/Top_CPU_waves.fst"
+[dumpfile_mtime] "Sat Jan  6 20:40:52 2024"
+[dumpfile_size] 2128
+[savefile] "/home/liam.skirrow/Documents/code/riscv-cpu/config-files/Top_CPU.gtkw"
+[timestart] 0
+[size] 1000 600
+[pos] -1 -1
+*-2.696658 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[sst_width] 279
+[signals_width] 262
+[sst_expanded] 1
+[sst_vpaned_height] 158
+@28
+TOP.Top_CPU.CK_REF
+TOP.Top_CPU.MEM_ACCESS_ADDRESS_BUS
+TOP.Top_CPU.MEM_ACCESS_DATA_OUT_BUS
+TOP.Top_CPU.MEM_ACCESS_READ_WRN
+TOP.Top_CPU.RST_N
+@420
+TOP.Top_CPU.i
+@22
+TOP.Top_CPU.inst_mem_address_bus[31:0]
+TOP.Top_CPU.inst_mem_data_bus[31:0]
+TOP.Top_CPU.instruction_memory[0][31:0]
+TOP.Top_CPU.instruction_memory[1][31:0]
+TOP.Top_CPU.instruction_memory[2][31:0]
+TOP.Top_CPU.instruction_memory[3][31:0]
+TOP.Top_CPU.instruction_memory[4][31:0]
+TOP.Top_CPU.instruction_memory[5][31:0]
+TOP.Top_CPU.instruction_memory[6][31:0]
+TOP.Top_CPU.instruction_memory[7][31:0]
+TOP.Top_CPU.instruction_memory[8][31:0]
+TOP.Top_CPU.instruction_memory[9][31:0]
+TOP.Top_CPU.instruction_memory[10][31:0]
+TOP.Top_CPU.instruction_memory[11][31:0]
+TOP.Top_CPU.instruction_memory[12][31:0]
+TOP.Top_CPU.instruction_memory[13][31:0]
+TOP.Top_CPU.instruction_memory[14][31:0]
+TOP.Top_CPU.instruction_memory[15][31:0]
+TOP.Top_CPU.instruction_memory[16][31:0]
+TOP.Top_CPU.instruction_memory[17][31:0]
+TOP.Top_CPU.instruction_memory[18][31:0]
+TOP.Top_CPU.instruction_memory[19][31:0]
+TOP.Top_CPU.instruction_memory[20][31:0]
+TOP.Top_CPU.mem_access_address_bus[15:0]
+TOP.Top_CPU.mem_access_data_in_bus[31:0]
+TOP.Top_CPU.mem_access_data_out_bus[31:0]
+@28
+TOP.Top_CPU.mem_access_read_wrn
+@22
+TOP.Top_CPU.memory[0][31:0]
+TOP.Top_CPU.memory[1][31:0]
+TOP.Top_CPU.memory[2][31:0]
+TOP.Top_CPU.memory[3][31:0]
+TOP.Top_CPU.memory[4][31:0]
+[pattern_trace] 1
+[pattern_trace] 0
