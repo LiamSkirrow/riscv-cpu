@@ -2,20 +2,20 @@
 #include <iostream>
 #include <verilated.h>
 #include <verilated_fst_c.h>
-#include "../obj_dir/VRegister_File.h"
-#include "../obj_dir/VRegister_File___024root.h"
-#include "../obj_dir/VRegister_File__Syms.h"
+#include "../obj_dir/Vregisterfile.h"
+#include "../obj_dir/Vregisterfile___024root.h"
+#include "../obj_dir/Vregisterfile__Syms.h"
 
 #define MAX_SIM_TIME 20
 vluint64_t sim_time = 0;
 
 int main(int argc, char** argv, char** env) {
-    VRegister_File *dut = new VRegister_File;
+    Vregisterfile *dut = new Vregisterfile;
 
     Verilated::traceEverOn(true);
     VerilatedFstC *m_trace = new VerilatedFstC;
     dut->trace(m_trace, 5);
-    m_trace->open("Register_File_waves.fst");
+    m_trace->open("registerfile_waves.fst");
 
     while (sim_time < MAX_SIM_TIME) {
         dut->CK_REF ^= 1;

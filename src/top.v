@@ -9,7 +9,7 @@
 //   to exist here so that the decode phase of the pipeline has a single-cycle execution rather than being purely combinatorial
 // ***
 
-module top(
+module Top(
     input wire CK_REF,
     input wire RST_N,
     input wire [31:0] INST_MEM_DATA_BUS,    // current instruction
@@ -70,13 +70,13 @@ module top(
     assign int_rst_n = RST_N & pipeline_flush_n_ff;
     
     // instantiate sub-modules
-    Register_File inst_reg_file (
+    RegisterFile inst_reg_file (
         .CK_REF(CK_REF), .RST_N(RST_N), .REG_RD_WRN(reg_rd_wrn), .RS1_REG_OFFSET(rs1_reg_offset), 
         .RS2_REG_OFFSET(rs2_reg_offset), .RD_REG_OFFSET(rd_reg_offset), .REG_DATA_IN(reg_data_in), 
         .RS1_DATA_OUT(rs1_data_out), .RS2_DATA_OUT(rs2_data_out), .PC_DATA_OUT(pc_data_out)
     );
 
-    alu inst_alu (
+    ALU inst_alu (
         .CK_REF(CK_REF), .RST_N(RST_N), .ALU_EN(alu_en), .OP_VAL(alu_operation_code),
         .A(alu_input_a), .B(alu_input_b), .OUT(alu_output), .CARRY_FLAG(alu_carry_flag),
         .ZERO_FLAG(alu_zero_flag), .OVERFLOW_FLAG(alu_overflow_flag), .ALU_DONE(alu_done)

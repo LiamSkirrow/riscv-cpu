@@ -10,61 +10,61 @@ CC=verilator
 
 top:
 ifeq ($(SYNTAX), 1)
-	@echo ">>> Syntax checking module: top"
+	@echo ">>> Syntax checking module: Top"
 	@echo
-	$(CC) -Wno-fatal --cc $(SRC)top.v $(SRC)alu.v $(SRC)Register_File.v --lint-only
+	$(CC) -Wno-fatal --cc $(SRC)top.v $(SRC)alu.v $(SRC)registerfile.v --lint-only
 else
 ifeq ($(WAVES), 1)
-	gtkwave $@_waves.fst -a $(CONF)$@.gtkw
+	gtkwave Top_waves.fst -a $(CONF)top.gtkw
 else
-	@echo ">>> Verilating top..."
+	@echo ">>> Verilating Top..."
 	@echo
-	$(CC) -Wno-fatal --trace-fst --cc $(SRC)top.v $(SRC)alu.v $(SRC)Register_File.v --exe $(TB)$@_tb.cpp
-	make -C obj_dir -f V$@.mk V$@
-	@echo ">>> Simulating top..."
+	$(CC) -Wno-fatal --trace-fst --cc $(SRC)top.v $(SRC)alu.v $(SRC)registerfile.v --exe $(TB)$@_tb.cpp
+	make -C obj_dir -f Vtop.mk Vtop
+	@echo ">>> Simulating Top..."
 	@echo
-	./obj_dir/V$@
+	./obj_dir/Vtop
 endif
 endif
 	@echo "DONE"
 
 alu:
 ifeq ($(SYNTAX), 1)
-	@echo ">>> Syntax checking module: alu"
+	@echo ">>> Syntax checking module: ALU"
 	@echo
 	$(CC) -Wno-fatal --cc $(SRC)alu.v --lint-only
 else
 ifeq ($(WAVES), 1)
-	gtkwave $@_waves.fst -a $(CONF)$@.gtkw
+	gtkwave alu_waves.fst -a $(CONF)alu.gtkw
 else
-	@echo ">>> Verilating alu..."
+	@echo ">>> Verilating ALU..."
 	@echo
-	$(CC) -Wno-fatal --trace-fst --cc $(SRC)$@.v --exe $(TB)$@_tb.cpp
-	make -C obj_dir -f V$@.mk V$@
-	@echo ">>> Simulating alu..."
+	$(CC) -Wno-fatal --trace-fst --cc $(SRC)alu.v --exe $(TB)alu_tb.cpp
+	make -C obj_dir -f Valu.mk Valu
+	@echo ">>> Simulating ALU..."
 	@echo
-	./obj_dir/V$@
+	./obj_dir/Valu
 endif
 endif
 	@echo "DONE"
 
 
-Register_File:
+registerfile:
 ifeq ($(SYNTAX), 1)
-	@echo ">>> Syntax checking module: Register_File"
+	@echo ">>> Syntax checking module: RegisterFile"
 	@echo
-	$(CC) -Wno-fatal --cc $(SRC)Register_File.v --lint-only
+	$(CC) -Wno-fatal --cc $(SRC)registerfile.v --lint-only
 else
 ifeq ($(WAVES), 1)
 	gtkwave $@_waves.fst -a $(CONF)$@.gtkw
 else
-	@echo ">>> Verilating Register_File..."
+	@echo ">>> Verilating RegisterFile..."
 	@echo
-	$(CC) -Wno-fatal --trace-fst --cc $(SRC)$@.v --exe $(TB)$@_tb.cpp
-	make -C obj_dir -f V$@.mk V$@
-	@echo ">>> Simulating Register_File..."
+	$(CC) -Wno-fatal --trace-fst --cc $(SRC)registerfile.v --exe $(TB)registerfile_tb.cpp
+	make -C obj_dir -f Vregisterfile.mk Vregisterfile
+	@echo ">>> Simulating RegisterFile..."
 	@echo
-	./obj_dir/V$@
+	./obj_dir/Vregisterfile
 endif
 endif
 	@echo "DONE"

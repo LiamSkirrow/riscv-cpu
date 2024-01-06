@@ -9,7 +9,7 @@
 // NOTE:
 // - not yet using the `defines for the encoded OP_VAL signal
 
-module alu(
+module ALU(
     input wire CK_REF,
     input wire RST_N,
     input wire ALU_EN,   // active high ALU enable TODO: remove this signal

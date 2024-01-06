@@ -6,7 +6,7 @@
 //  declare the program counter register (???)
 
 
-module Register_File(
+module RegisterFile(
     input wire CK_REF,
     input wire RST_N,
     input wire REG_RD_WRN,      // register read (HIGH) or write (LOW) mode
