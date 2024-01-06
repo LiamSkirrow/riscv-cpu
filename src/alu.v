@@ -110,8 +110,6 @@ module alu(
         endcase
     end 
     
-
-
     //top-level assigns
     assign OUT = OUT_reg[31:0];
     assign CARRY_FLAG = OUT_reg[32];
