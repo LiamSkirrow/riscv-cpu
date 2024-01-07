@@ -18,6 +18,14 @@ int main(int argc, char** argv, char** env) {
     m_trace->open("top_waves.fst");
 
     while (sim_time < MAX_SIM_TIME) {
+        
+        if(sim_time == 0 && dut->CK_REF == 0){
+            dut->RST_N = 0;
+        } else{
+            dut->RST_N = 1;
+        }
+
+
         dut->CK_REF ^= 1;
         dut->eval();
         m_trace->dump(sim_time);

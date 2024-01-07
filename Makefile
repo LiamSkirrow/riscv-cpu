@@ -15,7 +15,7 @@ ifeq ($(SYNTAX), 1)
 	$(CC) -Wno-fatal --cc $(SRC)top.v $(SRC)alu.v $(SRC)registerfile.v --lint-only
 else
 ifeq ($(WAVES), 1)
-	gtkwave Top_waves.fst -a $(CONF)top.gtkw
+	gtkwave top_waves.fst -a $(CONF)top.gtkw
 else
 	@echo ">>> Verilating Top..."
 	@echo
