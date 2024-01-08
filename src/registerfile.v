@@ -23,8 +23,7 @@ module RegisterFile(
     
     // local signals
     // TODO: whats the deal with 33 registers? The 33rd can't be reached since RD_REG_OFFSET is only 5 bits
-    reg [31:0] register_file [32:0];
-    wire [31:0] rs1_data_out, rs2_data_out, pc_data_out;
+    reg [31:0] register_file [0:32];
     integer i;
     
     //***********************
@@ -42,40 +41,65 @@ module RegisterFile(
     //     end
     // end
     
-    // access the register at the address offset, register file can be read ALWAYS
-    assign rs1_data_out = register_file[RS1_REG_OFFSET];
-    assign rs2_data_out = register_file[RS2_REG_OFFSET];
-    assign pc_data_out  = register_file[32];
-    
     //************************
     //Register Write Procedure
     //************************
     always @(posedge CK_REF, negedge RST_N) begin
         if(!RST_N) begin
-            // reset all registers to zero, for loop gets unrolled during synthesis
-            for (i = 0; i < 33; i=i+1) begin
-                register_file[i] = 32'd0;
-            end
+            // reset all registers to zero... 
+            // FIXME: I can't get for loops working with Verilator?
+            register_file[0]  <= 32'd0; 
+            register_file[1]  <= 32'd0; 
+            register_file[2]  <= 32'd0; 
+            register_file[3]  <= 32'd0; 
+            register_file[4]  <= 32'd0; 
+            register_file[5]  <= 32'd0; 
+            register_file[6]  <= 32'd0; 
+            register_file[7]  <= 32'd0; 
+            register_file[8]  <= 32'd0; 
+            register_file[9]  <= 32'd0; 
+            register_file[10] <= 32'd0; 
+            register_file[11] <= 32'd0; 
+            register_file[12] <= 32'd0; 
+            register_file[13] <= 32'd0; 
+            register_file[14] <= 32'd0; 
+            register_file[15] <= 32'd0; 
+            register_file[16] <= 32'd0;
+            register_file[17] <= 32'd0;
+            register_file[18] <= 32'd0;
+            register_file[19] <= 32'd0;
+            register_file[20] <= 32'd0;
+            register_file[21] <= 32'd0;
+            register_file[22] <= 32'd0;
+            register_file[23] <= 32'd0;
+            register_file[24] <= 32'd0;
+            register_file[25] <= 32'd0;
+            register_file[26] <= 32'd0;
+            register_file[27] <= 32'd0;
+            register_file[28] <= 32'd0;
+            register_file[29] <= 32'd0;
+            register_file[30] <= 32'd0;
+            register_file[31] <= 32'd0;
+            register_file[32] <= 32'd0;
         end
         else begin
             // TODO: should probably be counting up by 4 each time, parameterise the increment value
             //       alternatively maybe make the control unit feed in a signal that says it's ok
             //       to increment, like in the commented out conditional below
             //if(increment_ok) begin
-            register_file[32] = register_file[32] + 32'd1;
+            register_file[32] <= register_file[32] + 32'd1;
             //end
 
-            //only write to a register in the range of x1-x31 inclusive. Don't write to the zero register x0.
+            //only write to a register in the range of x1-x31 (+ PC). Don't write to the zero register x0.
             if(!REG_RD_WRN) begin
-                register_file[RD_REG_OFFSET] = (RD_REG_OFFSET == 5'd0) ? register_file[RD_REG_OFFSET] : REG_DATA_IN;
+                register_file[RD_REG_OFFSET] <= (RD_REG_OFFSET == 5'd0) ? 32'd0 : REG_DATA_IN;
             end
-
         end
     end
 
     //top-level assigns
-    assign RS1_DATA_OUT = rs1_data_out;
-    assign RS2_DATA_OUT = rs2_data_out;
-    assign PC_DATA_OUT = pc_data_out;
+    assign RS1_DATA_OUT = register_file[RS1_REG_OFFSET];
+    assign RS2_DATA_OUT = register_file[RS2_REG_OFFSET];
+    assign PC_DATA_OUT  = register_file[32];
 
 endmodule 

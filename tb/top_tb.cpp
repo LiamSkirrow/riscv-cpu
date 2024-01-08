@@ -30,7 +30,7 @@ int main(int argc, char** argv, char** env) {
         }
 
         // first lb instruction down below
-        dut->INST_MEM_DATA_BUS = 0b00000000000000000010000010000011;
+        dut->INST_MEM_DATA_BUS = 0b00000000010000000010000100000011;
 
         if(dut->MEM_ACCESS_READ_WRN){
             check = 1;

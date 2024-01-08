@@ -7,19 +7,21 @@ SRC=src/
 TB=tb/
 CONF=config-files/
 CC=verilator
+ARGS=--trace-max-array 33 --trace-max-width 32
+
 
 top:
 ifeq ($(SYNTAX), 1)
 	@echo ">>> Syntax checking module: Top"
 	@echo
-	$(CC) -Wno-fatal --cc $(SRC)top.v $(SRC)alu.v $(SRC)registerfile.v --lint-only
+	$(CC) -Wno-fatal --cc $(SRC)top.v $(SRC)alu.v $(SRC)registerfile.v --lint-only $(ARGS)
 else
 ifeq ($(WAVES), 1)
 	gtkwave top_waves.fst -a $(CONF)top.gtkw
 else
 	@echo ">>> Verilating Top..."
 	@echo
-	$(CC) -Wno-fatal --trace-fst --cc $(SRC)top.v $(SRC)alu.v $(SRC)registerfile.v --exe $(TB)$@_tb.cpp
+	$(CC) -Wno-fatal --trace-fst --cc $(SRC)top.v $(SRC)alu.v $(SRC)registerfile.v --exe $(TB)$@_tb.cpp $(ARGS)
 	make -C obj_dir -f Vtop.mk Vtop
 	@echo ">>> Simulating Top..."
 	@echo
@@ -53,14 +55,14 @@ registerfile:
 ifeq ($(SYNTAX), 1)
 	@echo ">>> Syntax checking module: RegisterFile"
 	@echo
-	$(CC) -Wno-fatal --cc $(SRC)registerfile.v --lint-only
+	$(CC) -Wno-fatal --cc $(SRC)registerfile.v --lint-only $(ARGS)
 else
 ifeq ($(WAVES), 1)
 	gtkwave $@_waves.fst -a $(CONF)$@.gtkw
 else
 	@echo ">>> Verilating RegisterFile..."
 	@echo
-	$(CC) -Wno-fatal --trace-fst --cc $(SRC)registerfile.v --exe $(TB)registerfile_tb.cpp
+	$(CC) -Wno-fatal --trace-fst --cc $(SRC)registerfile.v --exe $(TB)registerfile_tb.cpp $(ARGS)
 	make -C obj_dir -f Vregisterfile.mk Vregisterfile
 	@echo ">>> Simulating RegisterFile..."
 	@echo
