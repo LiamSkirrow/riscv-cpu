@@ -57,7 +57,12 @@ module RegisterFile(
             end
         end
         else begin
+            // TODO: should probably be counting up by 4 each time, parameterise the increment value
+            //       alternatively maybe make the control unit feed in a signal that says it's ok
+            //       to increment, like in the commented out conditional below
+            //if(increment_ok) begin
             register_file[32] = register_file[32] + 32'd1;
+            //end
 
             //only write to a register in the range of x1-x31 inclusive. Don't write to the zero register x0.
             if(!REG_RD_WRN) begin
