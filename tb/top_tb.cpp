@@ -17,8 +17,6 @@ int main(int argc, char** argv, char** env) {
     dut->trace(m_trace, 5);
     m_trace->open("top_waves.fst");
 
-    int check = 0;
-
     while (sim_time < MAX_SIM_TIME) {
         
         // release dut out of reset
@@ -26,18 +24,30 @@ int main(int argc, char** argv, char** env) {
             dut->RST_N = 0;
         } else{
             dut->RST_N = 1;
-            dut->MEM_ACCESS_DATA_IN_BUS = 0xCAFEBEED;
         }
-
-        // first lb instruction down below
-        dut->INST_MEM_DATA_BUS = 0b00000000010000000010000100000011;
-
-        if(dut->MEM_ACCESS_READ_WRN){
-            check = 1;
-        }
-
+        
         dut->CK_REF ^= 1;
         dut->eval();
+
+        // first lb instruction down below
+        if(sim_time == 1 && dut->CK_REF == 0){
+            dut->MEM_ACCESS_DATA_IN_BUS = 0xCAFEBEED;
+            // lw
+            dut->INST_MEM_DATA_BUS = 0b00000000010000000010000010000011;
+        }
+        if(sim_time == 3 && dut->CK_REF == 0){
+            // lw
+            dut->INST_MEM_DATA_BUS = 0b00000000010000000010000100000011;
+        }
+        if(sim_time == 5 && dut->CK_REF == 0){
+            // lw
+            dut->INST_MEM_DATA_BUS = 0b00000000010000000010000110000011;
+        }
+        if(sim_time == 7 && dut->CK_REF == 0){
+            // lw
+            dut->INST_MEM_DATA_BUS = 0b00000000010000000010001000000011;
+        }
+
         m_trace->dump(sim_time);
         sim_time++;
     }
@@ -48,6 +58,11 @@ int main(int argc, char** argv, char** env) {
 }
 
 /*
+
+// sw
+dut->INST_MEM_DATA_BUS = 0b00000000000100000010000010100011;
+
+
     // lb
     assign instruction_memory[0]  = 32'b000000000000_00000_010_00001_0000011;
 

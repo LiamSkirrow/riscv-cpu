@@ -1,21 +1,21 @@
 [*]
 [*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
-[*] Mon Jan  8 13:41:11 2024
+[*] Mon Jan  8 22:24:46 2024
 [*]
 [dumpfile] "/home/liam.skirrow/Documents/code/riscv-cpu/top_waves.fst"
-[dumpfile_mtime] "Mon Jan  8 13:40:57 2024"
-[dumpfile_size] 1950
+[dumpfile_mtime] "Mon Jan  8 22:23:53 2024"
+[dumpfile_size] 2316
 [savefile] "/home/liam.skirrow/Documents/code/riscv-cpu/config-files/top.gtkw"
 [timestart] 0
-[size] 1577 1001
-[pos] -16 7
-*-2.392340 10 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[size] 1800 1006
+[pos] -1 -1
+*-1.913216 17 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.Top.
 [sst_width] 378
 [signals_width] 334
 [sst_expanded] 1
-[sst_vpaned_height] 294
+[sst_vpaned_height] 279
 @28
 TOP.Top.CK_REF
 TOP.Top.RST_N
@@ -25,9 +25,8 @@ TOP.Top.INST_MEM_DATA_BUS[31:0]
 TOP.Top.MEM_ACCESS_ADDRESS_BUS[15:0]
 TOP.Top.MEM_ACCESS_DATA_IN_BUS[31:0]
 TOP.Top.MEM_ACCESS_DATA_OUT_BUS[31:0]
-@29
-TOP.Top.MEM_ACCESS_READ_WRN
 @28
+TOP.Top.MEM_ACCESS_READ_WRN
 TOP.Top.reg_wb_flag_ff
 TOP.Top.reg_wb_flag_ff_ff
 TOP.Top.reg_wb_flag_ff_ff_ff
@@ -53,9 +52,13 @@ TOP.Top.inst_alu.ZERO_FLAG
 @800200
 -Reg File
 @28
+TOP.Top.inst_reg_file.CK_REF
 TOP.Top.inst_reg_file.RST_N
 @22
 TOP.Top.inst_reg_file.PC_DATA_OUT[31:0]
+@420
+TOP.Top.inst_reg_file.i
+@22
 TOP.Top.inst_reg_file.RD_REG_OFFSET[4:0]
 TOP.Top.inst_reg_file.REG_DATA_IN[31:0]
 @28
@@ -65,6 +68,41 @@ TOP.Top.inst_reg_file.RS1_DATA_OUT[31:0]
 TOP.Top.inst_reg_file.RS1_REG_OFFSET[4:0]
 TOP.Top.inst_reg_file.RS2_DATA_OUT[31:0]
 TOP.Top.inst_reg_file.RS2_REG_OFFSET[4:0]
+TOP.Top.inst_reg_file.register_file[0][31:0]
+TOP.Top.inst_reg_file.register_file[1][31:0]
+TOP.Top.inst_reg_file.register_file[2][31:0]
+TOP.Top.inst_reg_file.register_file[3][31:0]
+@23
+TOP.Top.inst_reg_file.register_file[4][31:0]
+@22
+TOP.Top.inst_reg_file.register_file[5][31:0]
+TOP.Top.inst_reg_file.register_file[6][31:0]
+TOP.Top.inst_reg_file.register_file[7][31:0]
+TOP.Top.inst_reg_file.register_file[8][31:0]
+TOP.Top.inst_reg_file.register_file[9][31:0]
+TOP.Top.inst_reg_file.register_file[10][31:0]
+TOP.Top.inst_reg_file.register_file[11][31:0]
+TOP.Top.inst_reg_file.register_file[12][31:0]
+TOP.Top.inst_reg_file.register_file[13][31:0]
+TOP.Top.inst_reg_file.register_file[14][31:0]
+TOP.Top.inst_reg_file.register_file[15][31:0]
+TOP.Top.inst_reg_file.register_file[16][31:0]
+TOP.Top.inst_reg_file.register_file[17][31:0]
+TOP.Top.inst_reg_file.register_file[18][31:0]
+TOP.Top.inst_reg_file.register_file[19][31:0]
+TOP.Top.inst_reg_file.register_file[20][31:0]
+TOP.Top.inst_reg_file.register_file[21][31:0]
+TOP.Top.inst_reg_file.register_file[22][31:0]
+TOP.Top.inst_reg_file.register_file[23][31:0]
+TOP.Top.inst_reg_file.register_file[24][31:0]
+TOP.Top.inst_reg_file.register_file[25][31:0]
+TOP.Top.inst_reg_file.register_file[26][31:0]
+TOP.Top.inst_reg_file.register_file[27][31:0]
+TOP.Top.inst_reg_file.register_file[28][31:0]
+TOP.Top.inst_reg_file.register_file[29][31:0]
+TOP.Top.inst_reg_file.register_file[30][31:0]
+TOP.Top.inst_reg_file.register_file[31][31:0]
+TOP.Top.inst_reg_file.register_file[32][31:0]
 @1000200
 -Reg File
 [pattern_trace] 1
