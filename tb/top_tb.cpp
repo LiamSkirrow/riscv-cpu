@@ -32,10 +32,9 @@ int main(int argc, char** argv, char** env) {
         // first lb instruction down below
         dut->INST_MEM_DATA_BUS = 0b00000000000000000010000010000011;
 
-        // TODO: use check and see if this appears in the waveform
-        // if(){
-
-        // }
+        if(dut->MEM_ACCESS_READ_WRN){
+            check = 1;
+        }
 
         dut->CK_REF ^= 1;
         dut->eval();

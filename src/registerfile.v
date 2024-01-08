@@ -22,6 +22,7 @@ module RegisterFile(
     );
     
     // local signals
+    // TODO: whats the deal with 33 registers? The 33rd can't be reached since RD_REG_OFFSET is only 5 bits
     reg [31:0] register_file [32:0];
     wire [31:0] rs1_data_out, rs2_data_out, pc_data_out;
     integer i;
@@ -51,7 +52,7 @@ module RegisterFile(
     //************************
     always @(posedge CK_REF, negedge RST_N) begin
         if(!RST_N) begin
-            // reset all registers to zero, for loop gets unrolled during synthesis            
+            // reset all registers to zero, for loop gets unrolled during synthesis
             for (i = 0; i < 33; i=i+1) begin
                 register_file[i] = 32'd0;
             end
