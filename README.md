@@ -10,3 +10,5 @@ The intention is to compile and simulate the Verilog using Verilator.
 ## TODO:
 - Self-checking autotests? Should be invoked from the Makefile.
 - CocoTB investigation to make the testbenches a little better? This is an enhancement and not strictly required but might be good to look into.
+- include draw.io diagram in the README, showing the structure of the CPU
+- include a link to a writeup of the design decisions and architecture of the CPU
