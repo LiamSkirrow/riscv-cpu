@@ -24,7 +24,8 @@ int main(int argc, char** argv, char** env) {
         0b00000000000100000010000010000011,   // lw
         0b00000000000100000010000100000011,   // lw
         0b00000000000100000000000110000011,   // lb
-        0b00000000000100000001001000000011    // lh
+        0b00000000000100000001001000000011,   // lh
+        0b00000000000000000000000001101111    // jal
     };
 
     unsigned int data_mem[DATA_MEM_SIZE] = {
@@ -46,6 +47,7 @@ int main(int argc, char** argv, char** env) {
 
         // fetch the instruction pointed to by PC
         if(sim_time > 0 && dut->CK_REF == 0){
+            printf("Executing instruction at mem location: %8x\n", dut->INST_MEM_ADDRESS_BUS);
             dut->INST_MEM_DATA_BUS = code_mem[dut->INST_MEM_ADDRESS_BUS];
 
             // handle the CPU's RAM request (read or write)

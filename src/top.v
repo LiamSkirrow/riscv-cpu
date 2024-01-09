@@ -33,6 +33,8 @@ module Top(
     reg  [31:0] reg_data_in;
     wire [31:0] rs1_data_out, rs2_data_out;
     wire [31:0] pc_data_out, ir_data_out;
+    wire freeze_pc;
+    reg update_pc_next, update_pc_ff, update_pc_ff_ff, update_pc_ff_ff_ff;
     // alu
     reg  [31:0] alu_input_a_reg, alu_input_b_reg;
     wire [31:0] alu_input_a, alu_input_b;
@@ -69,11 +71,17 @@ module Top(
     assign alu_en = alu_en_reg;
     assign int_rst_n = RST_N & pipeline_flush_n_ff;
     
+    // if we get any kind of jump instruction, then we need to freeze the PC in this clock cycle,
+    // doing this freeze in the decode pipeline stage is too late since PC will have incremented 
+    // to the next instruction by then
+    assign freeze_pc = (INST_MEM_DATA_BUS[6:0] == 7'b110_1111);
+
     // instantiate sub-modules
     RegisterFile inst_reg_file (
         .CK_REF(CK_REF), .RST_N(RST_N), .REG_RD_WRN(reg_rd_wrn), .RS1_REG_OFFSET(rs1_reg_offset), 
         .RS2_REG_OFFSET(rs2_reg_offset), .RD_REG_OFFSET(rd_reg_offset), .REG_DATA_IN(reg_data_in), 
-        .RS1_DATA_OUT(rs1_data_out), .RS2_DATA_OUT(rs2_data_out), .PC_DATA_OUT(pc_data_out)
+        .RS1_DATA_OUT(rs1_data_out), .RS2_DATA_OUT(rs2_data_out), .PC_DATA_OUT(pc_data_out), .UPDATE_PC(update_pc_ff),
+        .FREEZE_PC(freeze_pc)
     );
 
     ALU inst_alu (
@@ -97,6 +105,7 @@ module Top(
             pipeline_flush_n_ff_ff_ff <= 1'b1;
             pipeline_flush_n_ff_ff_ff_ff <= 1'b1;
         end
+        // TODO: this might be unused and may be deleted
         else begin 
             pipeline_flush_n_ff <= pipeline_flush_n_ff_ff;
             pipeline_flush_n_ff_ff <= pipeline_flush_n_ff_ff_ff;
@@ -129,6 +138,11 @@ module Top(
             alu_out_reg_ff <= 32'h0000_0000;
             mem_data_ff <= 32'h0000_0000;
             mem_access_operation_ff <= 2'b00;
+            mem_access_operation_ff_ff <= 2'b00;
+
+            update_pc_ff <= 1'b0;
+            update_pc_ff_ff <= 1'b0;
+            update_pc_ff_ff_ff <= 1'b0;;
         end
         else begin
             rd_reg_offset_ff <= rd_reg_offset_ff_ff;
@@ -155,6 +169,10 @@ module Top(
 
             mem_data_ff <= MEM_ACCESS_DATA_IN_BUS;
             alu_out_reg_ff <= alu_out_reg_next;
+
+            update_pc_ff <= update_pc_ff_ff;
+            update_pc_ff_ff <= update_pc_ff_ff_ff;
+            update_pc_ff_ff_ff <= update_pc_next;
             
         end
     end
@@ -187,6 +205,8 @@ module Top(
     // TODO: each opcode sub-case has its own default statement where for some reason I just set everything to zero, instead
     //       we should flag an invalid opcode sequence and set some error register somewhere and halt the CPU
     always @(*) begin
+        update_pc_next = 1'b0;
+
         case (instruction_pointer_reg[6:0])
             7'b011_0111 : begin   // LUI
             
@@ -195,11 +215,24 @@ module Top(
             
             end
             7'b110_1111 : begin   // JAL
+                // HOWTO;
+                // - freeze PC for 3 clocks cycles to allow for remaining pipelined instructions to complete
+                // - whilst waiting, force control signals to zero to have null effect on subsequent clocks
+                // - decode imm jump address, shift by [amount], ALU output shall form the value to write into 
+                //   the rd register
+                // - also, need some logic to say that we want to write that same ALU output value to the PC in 
+                //   order to perform the actual jump
+
+                // update_pc_next = 1'b1;   // in three clock cycles, update the PC to the decoded value below
+                
+                // rd_reg_offset_next = instruction_pointer_reg[11:7];   // write the offset to the rd register
+
             
             end
             7'b110_0111 : begin   // JALR
             
             end
+            // TODO: the pipeline flush logic here needs checking!!! might not need the pipeline_flush_n_next signal at all..
             7'b110_0011 : begin   // BEQ, BNE, BLT, BGE, BLTU, BGEU
                 rd_reg_offset_next = `REG_FILE_PC_OFFSET;            // rd_register_offset not needed for this instruction 
                 rs1_reg_offset = instruction_pointer_reg[19:15];     // register address offset given by rs1 in INST
