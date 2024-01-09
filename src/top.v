@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`include "src/defines.v"
+`include "riscv-cpu/src/defines.v"
 
 // ***
 // NOTES: 
