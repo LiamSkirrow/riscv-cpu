@@ -115,7 +115,7 @@ module Top(
     end
 
     always @(posedge CK_REF, negedge int_rst_n) begin
-        if(!RST_N) begin
+        if(!int_rst_n) begin
             rd_reg_offset_ff <= 5'b00000;
             rd_reg_offset_ff_ff <= 5'b00000;
             rd_reg_offset_ff_ff_ff <= 5'b00000;
