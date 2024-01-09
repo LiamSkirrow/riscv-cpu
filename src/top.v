@@ -488,7 +488,8 @@ module Top(
             7'b111_0011 : begin   // ECALL, EBREAK
             
             end
-            default : begin   // this state is the equivalent of a pipeline bubble, 
+
+            7'b000_0000 : begin   // PIPELINE BUBBLE STATE
                 // set each control signal to an inactive value, should have a null effect on the pipeline
                 rd_reg_offset_next = 5'd0;
                 rs1_reg_offset = 5'd0;
@@ -501,6 +502,9 @@ module Top(
                 reg_wb_flag_next = 1'b0;
                 reg_wb_data_type_next = `REG_WB_WORD;
                 pipeline_flush_n_next = 1'b1;
+            end
+
+            default : begin   // UNRECOGNISED OPCODE STATE
                 //TODO: could include a top-level output to signal an invalid opcode detect...
             end
         endcase

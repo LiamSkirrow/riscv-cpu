@@ -7,6 +7,8 @@
 #include "../obj_dir/Vtop__Syms.h"
 
 #define MAX_SIM_TIME 50
+#define CODE_MEM_SIZE 100
+#define DATA_MEM_SIZE 100
 vluint64_t sim_time = 0;
 
 int main(int argc, char** argv, char** env) {
@@ -16,6 +18,19 @@ int main(int argc, char** argv, char** env) {
     VerilatedFstC *m_trace = new VerilatedFstC;
     dut->trace(m_trace, 5);
     m_trace->open("top_waves.fst");
+
+    // initialised the code mem with the instructions to execute
+    int code_mem[CODE_MEM_SIZE] = {
+        0b00000000000100000010000010000011,   // lw
+        0b00000000000100000010000100000011,   // lw
+        0b00000000000100000000000110000011,   // lb
+        0b00000000000100000001001000000011    // lh
+    };
+
+    unsigned int data_mem[DATA_MEM_SIZE] = {
+        0xDEADBEEF,
+        0xDEEDCAFE
+    };
 
     while (sim_time < MAX_SIM_TIME) {
         
@@ -29,23 +44,17 @@ int main(int argc, char** argv, char** env) {
         dut->CK_REF ^= 1;
         dut->eval();
 
-        // first lb instruction down below
-        if(sim_time == 1 && dut->CK_REF == 0){
-            dut->MEM_ACCESS_DATA_IN_BUS = 0xCAFEBEED;
-            // lw
-            dut->INST_MEM_DATA_BUS = 0b00000000010000000010000010000011;
-        }
-        else if(sim_time == 3 && dut->CK_REF == 0){
-            // lw
-            dut->INST_MEM_DATA_BUS = 0b00000000010000000010000100000011;
-        }
-        else if(sim_time == 5 && dut->CK_REF == 0){
-            // lb
-            dut->INST_MEM_DATA_BUS = 0b00000000010000000000000110000011;
-        }
-        else if(sim_time == 7 && dut->CK_REF == 0){
-            // lw
-            dut->INST_MEM_DATA_BUS = 0b00000000010000000001001000000011;
+        // fetch the instruction pointed to by PC
+        if(sim_time > 0 && dut->CK_REF == 0){
+            dut->INST_MEM_DATA_BUS = code_mem[dut->INST_MEM_ADDRESS_BUS];
+
+            // handle the CPU's RAM request (read or write)
+            if(dut->MEM_ACCESS_READ_WRN == 1){
+                dut->MEM_ACCESS_DATA_IN_BUS = data_mem[dut->MEM_ACCESS_ADDRESS_BUS];
+            }
+            else{
+                data_mem[dut->MEM_ACCESS_ADDRESS_BUS] = dut->MEM_ACCESS_DATA_OUT_BUS;
+            }
         }
 
         m_trace->dump(sim_time);
@@ -58,11 +67,6 @@ int main(int argc, char** argv, char** env) {
 }
 
 /*
-
-// sw
-dut->INST_MEM_DATA_BUS = 0b00000000000100000010000010100011;
-
-
     // lb
     assign instruction_memory[0]  = 32'b000000000000_00000_010_00001_0000011;
 
