@@ -9,12 +9,13 @@
 module RegisterFile(
     input wire CK_REF,
     input wire RST_N,
-    input wire REG_RD_WRN,      // register read (HIGH) or write (LOW) mode
-    //input wire [31:0] reg_pc,   // *** possibly instantiate program counter from within this module?
-    input wire [4:0] RS1_REG_OFFSET,   // register address offset for the rs1 source register for the next instruction
-    input wire [4:0] RS2_REG_OFFSET,   // register address offset for the rs2 source register for the next instruction
-    input wire [4:0] RD_REG_OFFSET,    // register address offset for the rd destination register for the next instruction
+    input wire REG_RD_WRN,             // register read (HIGH) or write (LOW) mode
+    input wire [4:0]  RS1_REG_OFFSET,  // register address offset for the rs1 source register for the next instruction
+    input wire [4:0]  RS2_REG_OFFSET,  // register address offset for the rs2 source register for the next instruction
+    input wire [4:0]  RD_REG_OFFSET,   // register address offset for the rd destination register for the next instruction
     input wire [31:0] REG_DATA_IN,     // input 32 bit word to write to the register at address rd_reg_offset
+    input wire        UPDATE_PC,       // reprogram the value for the PC, occurs during WB stage of jump instructions
+    input wire        FREEZE_PC,       // keep the PC constant and don't increment
     
     output wire [31:0] RS1_DATA_OUT,
     output wire [31:0] RS2_DATA_OUT,
@@ -86,9 +87,19 @@ module RegisterFile(
             // TODO: should probably be counting up by 4 each time, parameterise the increment value
             //       alternatively maybe make the control unit feed in a signal that says it's ok
             //       to increment, like in the commented out conditional below
-            //if(increment_ok) begin
-            register_file[32] <= register_file[32] + 32'd1;
-            //end
+            if(!UPDATE_PC) begin
+                // PC needs to stay constant and not increment
+                if(FREEZE_PC) begin
+                    register_file[32] <= register_file[32];
+                end
+                else begin
+                    register_file[32] <= register_file[32] + 32'd1;
+                end
+            end
+            // jump instruction is occurring, need to update the PC to the new value
+            else begin
+                register_file[32] <= REG_DATA_IN;
+            end
 
             //only write to a register in the range of x1-x31 (+ PC). Don't write to the zero register x0.
             if(!REG_RD_WRN) begin

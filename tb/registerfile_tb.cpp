@@ -54,6 +54,19 @@ int main(int argc, char** argv, char** env) {
             dut->REG_DATA_IN = 0xDEADBEEF;
             dut->RD_REG_OFFSET = 0x06;
         }
+        
+        // modify the PC
+        if(sim_time == 7 && dut->CK_REF == 0){
+            dut->REG_DATA_IN = 0xDEADBEEF;
+            dut->FREEZE_PC = 1;
+            dut->RD_REG_OFFSET = 0x06;
+        }
+        if(sim_time == 13 && dut->CK_REF == 0){
+            dut->REG_DATA_IN = 0xDEADBEEF;
+            dut->FREEZE_PC = 1;
+            dut->UPDATE_PC = 1;
+            dut->RD_REG_OFFSET = 0x06;
+        }
 
         m_trace->dump(sim_time);
         sim_time++;
