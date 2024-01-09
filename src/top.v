@@ -181,6 +181,11 @@ module Top(
     // Instruction Decode Stage
     //*************************
     // TODO: go through and make sure all the control signals are reset in the default statements...
+
+    // TODO: instead of defining default values for registers in each case, just define the default value HERE,
+    //       any time a register needs to stay at its default value it can simply be omitted in that specific case.
+    // TODO: each opcode sub-case has its own default statement where for some reason I just set everything to zero, instead
+    //       we should flag an invalid opcode sequence and set some error register somewhere and halt the CPU
     always @(*) begin
         case (instruction_pointer_reg[6:0])
             7'b011_0111 : begin   // LUI

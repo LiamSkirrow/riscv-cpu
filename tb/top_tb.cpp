@@ -6,7 +6,7 @@
 #include "../obj_dir/Vtop___024root.h"
 #include "../obj_dir/Vtop__Syms.h"
 
-#define MAX_SIM_TIME 20
+#define MAX_SIM_TIME 50
 vluint64_t sim_time = 0;
 
 int main(int argc, char** argv, char** env) {
@@ -35,17 +35,17 @@ int main(int argc, char** argv, char** env) {
             // lw
             dut->INST_MEM_DATA_BUS = 0b00000000010000000010000010000011;
         }
-        if(sim_time == 3 && dut->CK_REF == 0){
+        else if(sim_time == 3 && dut->CK_REF == 0){
             // lw
             dut->INST_MEM_DATA_BUS = 0b00000000010000000010000100000011;
         }
-        if(sim_time == 5 && dut->CK_REF == 0){
-            // lw
-            dut->INST_MEM_DATA_BUS = 0b00000000010000000010000110000011;
+        else if(sim_time == 5 && dut->CK_REF == 0){
+            // lb
+            dut->INST_MEM_DATA_BUS = 0b00000000010000000000000110000011;
         }
-        if(sim_time == 7 && dut->CK_REF == 0){
+        else if(sim_time == 7 && dut->CK_REF == 0){
             // lw
-            dut->INST_MEM_DATA_BUS = 0b00000000010000000010001000000011;
+            dut->INST_MEM_DATA_BUS = 0b00000000010000000001001000000011;
         }
 
         m_trace->dump(sim_time);
