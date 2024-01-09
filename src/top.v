@@ -223,10 +223,18 @@ module Top(
                 // - also, need some logic to say that we want to write that same ALU output value to the PC in 
                 //   order to perform the actual jump
 
-                // update_pc_next = 1'b1;   // in three clock cycles, update the PC to the decoded value below
+                update_pc_next = 1'b1;   // in three clock cycles, update the PC to the decoded value below
+                rd_reg_offset_next = instruction_pointer_reg[11:7];  // destination register being written to, must be triple registered/delayed for three ck cycles
                 
-                // rd_reg_offset_next = instruction_pointer_reg[11:7];   // write the offset to the rd register
-
+                // TODO: this is wrong, need to instead shift
+                alu_input_a_reg = instruction_pointer_reg[20:12];   // ALU A input is the output data of rs1
+                alu_input_b_reg = 32'd0;                            // ALU B input is the immediate in the instruction
+                alu_operation_code_reg = `ALU_ADD_OP; // ALU is set to perform an addition operation
+                // TODO: this is wrong, need to instead shift
+                
+                mem_access_operation_next = `MEM_NOP; // memory access stage will do nothing
+                alu_mem_operation_n_next = 1'b1;   // indicate to the write back stage whether to load from ALU or memory, tripled registered/delayed for three ck cycles
+                reg_wb_flag_next = 1'b1;           // register write back will occur for this instruction, must be triple registered/delayed for three ck cycles
             
             end
             7'b110_0111 : begin   // JALR

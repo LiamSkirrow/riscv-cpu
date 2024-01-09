@@ -6,7 +6,7 @@
 #include "../obj_dir/Vtop___024root.h"
 #include "../obj_dir/Vtop__Syms.h"
 
-#define MAX_SIM_TIME 50
+#define MAX_SIM_TIME 100
 #define CODE_MEM_SIZE 100
 #define DATA_MEM_SIZE 100
 vluint64_t sim_time = 0;
@@ -25,7 +25,8 @@ int main(int argc, char** argv, char** env) {
         0b00000000000100000010000100000011,   // lw
         0b00000000000100000000000110000011,   // lb
         0b00000000000100000001001000000011,   // lh
-        0b00000000000000000000000001101111    // jal
+        0b00000000000101010000010100010011,   // addi r10, r10, 1
+        0b00000000000000000000010001101111    // jal
     };
 
     unsigned int data_mem[DATA_MEM_SIZE] = {
