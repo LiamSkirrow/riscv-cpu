@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`include "src/defines.v"
+`include "riscv-cpu/src/defines.v"
 
 // ***
 // NOTES: 
@@ -12,6 +12,7 @@
 module Top(
     input wire CK_REF,
     input wire RST_N,
+    input wire HALT,     // halt the CPU pipeline
     input wire [31:0] INST_MEM_DATA_BUS,    // current instruction
     input wire [31:0] MEM_ACCESS_DATA_IN_BUS,    // RAM register block data input bus
 
@@ -81,7 +82,7 @@ module Top(
         .CK_REF(CK_REF), .RST_N(RST_N), .REG_RD_WRN(reg_rd_wrn), .RS1_REG_OFFSET(rs1_reg_offset), 
         .RS2_REG_OFFSET(rs2_reg_offset), .RD_REG_OFFSET(rd_reg_offset), .REG_DATA_IN(reg_data_in), 
         .RS1_DATA_OUT(rs1_data_out), .RS2_DATA_OUT(rs2_data_out), .PC_DATA_OUT(pc_data_out), .UPDATE_PC(update_pc_ff),
-        .FREEZE_PC(freeze_pc)
+        .FREEZE_PC(freeze_pc), .HALT(HALT)
     );
 
     ALU inst_alu (
@@ -98,6 +99,8 @@ module Top(
     // **************** NOTE ****************
     
     // Sequential Processes
+    
+    // TODO: this might be unused and may be deleted
     always @(posedge CK_REF, negedge RST_N) begin
         if(!RST_N) begin
             pipeline_flush_n_ff <= 1'b1;
@@ -105,7 +108,6 @@ module Top(
             pipeline_flush_n_ff_ff_ff <= 1'b1;
             pipeline_flush_n_ff_ff_ff_ff <= 1'b1;
         end
-        // TODO: this might be unused and may be deleted
         else begin 
             pipeline_flush_n_ff <= pipeline_flush_n_ff_ff;
             pipeline_flush_n_ff_ff <= pipeline_flush_n_ff_ff_ff;
@@ -145,34 +147,37 @@ module Top(
             update_pc_ff_ff_ff <= 1'b0;;
         end
         else begin
-            rd_reg_offset_ff <= rd_reg_offset_ff_ff;
-            rd_reg_offset_ff_ff <= rd_reg_offset_ff_ff_ff;
-            rd_reg_offset_ff_ff_ff <= rd_reg_offset_next;
+            // only update the registers if HALT is not active
+            if(!HALT) begin
+                rd_reg_offset_ff <= rd_reg_offset_ff_ff;
+                rd_reg_offset_ff_ff <= rd_reg_offset_ff_ff_ff;
+                rd_reg_offset_ff_ff_ff <= rd_reg_offset_next;
 
-            reg_wb_flag_ff <= reg_wb_flag_ff_ff;
-            reg_wb_flag_ff_ff <= reg_wb_flag_ff_ff_ff;
-            reg_wb_flag_ff_ff_ff <= reg_wb_flag_next;
-            
-            alu_mem_operation_n_ff <= alu_mem_operation_n_ff_ff;
-            alu_mem_operation_n_ff_ff <= alu_mem_operation_n_ff_ff_ff;
-            alu_mem_operation_n_ff_ff_ff <= alu_mem_operation_n_next;
+                reg_wb_flag_ff <= reg_wb_flag_ff_ff;
+                reg_wb_flag_ff_ff <= reg_wb_flag_ff_ff_ff;
+                reg_wb_flag_ff_ff_ff <= reg_wb_flag_next;
+                
+                alu_mem_operation_n_ff <= alu_mem_operation_n_ff_ff;
+                alu_mem_operation_n_ff_ff <= alu_mem_operation_n_ff_ff_ff;
+                alu_mem_operation_n_ff_ff_ff <= alu_mem_operation_n_next;
 
-            reg_wb_data_type_ff <= reg_wb_data_type_ff_ff;
-            reg_wb_data_type_ff_ff <= reg_wb_data_type_ff_ff_ff;
-            reg_wb_data_type_ff_ff_ff <= reg_wb_data_type_next;
+                reg_wb_data_type_ff <= reg_wb_data_type_ff_ff;
+                reg_wb_data_type_ff_ff <= reg_wb_data_type_ff_ff_ff;
+                reg_wb_data_type_ff_ff_ff <= reg_wb_data_type_next;
 
-            rs2_data_out_ff <= rs2_data_out_ff_ff;
-            rs2_data_out_ff_ff <= rs2_data_out_next;
+                rs2_data_out_ff <= rs2_data_out_ff_ff;
+                rs2_data_out_ff_ff <= rs2_data_out_next;
 
-            mem_access_operation_ff <= mem_access_operation_ff_ff;
-            mem_access_operation_ff_ff <= mem_access_operation_next;
+                mem_access_operation_ff <= mem_access_operation_ff_ff;
+                mem_access_operation_ff_ff <= mem_access_operation_next;
 
-            mem_data_ff <= MEM_ACCESS_DATA_IN_BUS;
-            alu_out_reg_ff <= alu_out_reg_next;
+                mem_data_ff <= MEM_ACCESS_DATA_IN_BUS;
+                alu_out_reg_ff <= alu_out_reg_next;
 
-            update_pc_ff <= update_pc_ff_ff;
-            update_pc_ff_ff <= update_pc_ff_ff_ff;
-            update_pc_ff_ff_ff <= update_pc_next;
+                update_pc_ff <= update_pc_ff_ff;
+                update_pc_ff_ff <= update_pc_ff_ff_ff;
+                update_pc_ff_ff_ff <= update_pc_next;
+            end
             
         end
     end
