@@ -12,6 +12,7 @@
 module ALU(
     input wire CK_REF,
     input wire RST_N,
+    input wire HALT,     // CPU halt, freeze registers
     input wire ALU_EN,   // active high ALU enable TODO: remove this signal
     input wire [3:0] OP_VAL,   // encoded operation bus, indicates which A/L operation to perform
 //     input wire SIGNED_UNSIGNED_N,   // signed or unsigned operation
@@ -41,15 +42,17 @@ module ALU(
             alu_done_ff_ff <= 1'b0;
             OP_VAL_reg <= 4'b0000;
         end
-        else begin 
-            A_reg <= A;
-            B_reg <= B;
-            OUT_reg <= OUT_next;
-            OP_VAL_reg <= OP_VAL;
-            // 'alu_done_ff' is double-registered to add an extra clock cycle delay, therefore aligning with 'OUT_reg'
-            // alu_done_ff <= alu_done_ff_ff;
-            // alu_done_ff_ff <= alu_done_next;
-            alu_done_ff <= alu_done_next;
+        else begin
+            if(!HALT) begin
+                A_reg <= A;
+                B_reg <= B;
+                OUT_reg <= OUT_next;
+                OP_VAL_reg <= OP_VAL;
+                // 'alu_done_ff' is double-registered to add an extra clock cycle delay, therefore aligning with 'OUT_reg'
+                // alu_done_ff <= alu_done_ff_ff;
+                // alu_done_ff_ff <= alu_done_next;
+                alu_done_ff <= alu_done_next;
+            end
         end
     end
     
