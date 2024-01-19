@@ -72,10 +72,10 @@ module Top(
     assign alu_en = alu_en_reg;
     assign int_rst_n = RST_N & pipeline_flush_n_ff;
     
-    // if we get any kind of jump instruction, then we need to freeze the PC in this clock cycle,
+    // if we get any kind of jump instruction, then we need to freeze the value of the PC
     // doing this freeze in the decode pipeline stage is too late since PC will have incremented 
     // to the next instruction by then
-    assign freeze_pc = (INST_MEM_DATA_BUS[6:0] == 7'b110_1111);
+    assign freeze_pc = update_pc_next;
 
     // instantiate sub-modules
     RegisterFile inst_reg_file (
@@ -88,7 +88,7 @@ module Top(
     ALU inst_alu (
         .CK_REF(CK_REF), .RST_N(RST_N), .ALU_EN(alu_en), .OP_VAL(alu_operation_code),
         .A(alu_input_a), .B(alu_input_b), .OUT(alu_output), .CARRY_FLAG(alu_carry_flag),
-        .ZERO_FLAG(alu_zero_flag), .OVERFLOW_FLAG(alu_overflow_flag), .ALU_DONE(alu_done)
+        .ZERO_FLAG(alu_zero_flag), .OVERFLOW_FLAG(alu_overflow_flag), .ALU_DONE(alu_done), .HALT(HALT)
     );
 
     // **************** NOTE ****************
