@@ -71,8 +71,28 @@ endif
 endif
 	@echo "DONE"
 
+instructiondecoder:
+ifeq ($(SYNTAX), 1)
+	@echo ">>> Syntax checking module: InstructionDecoder"
+	@echo
+	$(CC) -Wno-fatal --cc $(SRC)instructiondecoder.v $(SRC)defines.v --lint-only $(ARGS)
+else
+ifeq ($(WAVES), 1)
+	gtkwave $@_waves.fst -a $(CONF)$@.gtkw
+else
+	@echo ">>> Verilating InstructionDecoder..."
+	@echo
+	$(CC) -Wno-fatal --trace-fst --cc $(SRC)instructiondecoder.v $(SRC)defines.v --exe $(TB)instructiondecoder_tb.cpp $(ARGS)
+	make -C obj_dir -f Vinstructiondecoder.mk Vinstructiondecoder
+	@echo ">>> Simulating InstructionDecoder..."
+	@echo
+	./obj_dir/Vinstructiondecoder
+endif
+endif
+	@echo "DONE"
 
-# run a sequence of self-checking autotests
+
+# TODO: run a sequence of self-checking autotests
 test:
 
 
