@@ -203,14 +203,24 @@ module Top(
     //*************************
     // Instruction Decode Stage
     //*************************
-    // TODO: go through and make sure all the control signals are reset in the default statements...
-
-    // TODO: instead of defining default values for registers in each case, just define the default value HERE,
-    //       any time a register needs to stay at its default value it can simply be omitted in that specific case.
-    // TODO: each opcode sub-case has its own default statement where for some reason I just set everything to zero, instead
-    //       we should flag an invalid opcode sequence and set some error register somewhere and halt the CPU
+    // TODO: each opcode sub-case has its own default statement we should flag an invalid opcode by using an assert()
+    //       this will be useful for simulation, but what do we expect to happen on the CPU? Need to handle this case
+    //       maybe create an exception mechanism? May need an interrupt controller to be present...
     always @(*) begin
+        // set sensible (inactive) default values for all registers
         update_pc_next = 1'b0;
+        rd_reg_offset_next = 5'd0;
+        rs1_reg_offset = 5'd0;
+        rs2_reg_offset = 5'd0;
+        alu_input_a_reg = 32'd0;
+        alu_input_b_reg = 32'd0;
+        alu_operation_code_reg = 4'b0000;
+        mem_access_operation_next = `MEM_NOP;
+        alu_mem_operation_n_next = 1'b0;
+        reg_wb_flag_next = 1'b0;
+        reg_wb_data_type_next = `REG_WB_WORD;
+        rs2_data_out_next = 32'd0;
+        pipeline_flush_n_next = 1'b1;
 
         case (instruction_pointer_reg[6:0])
             7'b011_0111 : begin   // LUI
@@ -304,19 +314,8 @@ module Top(
                         reg_wb_data_type_next = `REG_WB_HALF_UNSIGNED;
                     end
 
-                    default : begin   // invalid opcode, set all control signals to sensible values
-                        rd_reg_offset_next = 5'd0;
-                        rs1_reg_offset = 5'd0;
-                        rs2_reg_offset = 5'd0;
-                        alu_input_a_reg = 32'd0;
-                        alu_input_b_reg = 32'd0;
-                        alu_operation_code_reg = 4'b0000;
-                        mem_access_operation_next = `MEM_NOP;
-                        alu_mem_operation_n_next = 1'b0;
-                        reg_wb_flag_next = 1'b0;
-                        reg_wb_data_type_next = `REG_WB_WORD;
-                        rs2_data_out_next = 32'd0;
-                        pipeline_flush_n_next = 1'b1;
+                    default : begin   // TODO: invalid opcode
+
                     end
                 endcase
             end
@@ -344,19 +343,8 @@ module Top(
                     3'b010 : begin   // SW
                         reg_wb_data_type_next = `REG_WB_WORD;
                     end
-                    default : begin
-                        rd_reg_offset_next = 5'd0;
-                        rs1_reg_offset = 5'd0;
-                        rs2_reg_offset = 5'd0;
-                        alu_input_a_reg = 32'd0;
-                        alu_input_b_reg = 32'd0;
-                        alu_operation_code_reg = 4'b0000;
-                        mem_access_operation_next = `MEM_NOP;
-                        alu_mem_operation_n_next = 1'b0;
-                        reg_wb_flag_next = 1'b0;
-                        reg_wb_data_type_next = `REG_WB_WORD;
-                        rs2_data_out_next = 32'd0;
-                        pipeline_flush_n_next = 1'b1;
+                    default : begin // TODO: invalid opcode
+
                     end
                 endcase
             end
@@ -402,35 +390,10 @@ module Top(
                             1'b1 : begin   // SRAI
                                 alu_operation_code_reg = `ALU_SRA_OP;
                             end
-                            default : begin
-                                rd_reg_offset_next = 5'd0;
-                                rs1_reg_offset = 5'd0;
-                                rs2_reg_offset = 5'd0;
-                                alu_input_a_reg = 32'd0;
-                                alu_input_b_reg = 32'd0;
-                                alu_operation_code_reg = 4'b0000;
-                                mem_access_operation_next = `MEM_NOP;
-                                alu_mem_operation_n_next = 1'b0;
-                                reg_wb_flag_next = 1'b0;
-                                reg_wb_data_type_next = `REG_WB_WORD;
-                                rs2_data_out_next = 32'd0;
-                                pipeline_flush_n_next = 1'b1;
-                            end
                         endcase
                     end
-                    default : begin
-                        rd_reg_offset_next = 5'd0;
-                        rs1_reg_offset = 5'd0;
-                        rs2_reg_offset = 5'd0;
-                        alu_input_a_reg = 32'd0;
-                        alu_input_b_reg = 32'd0;
-                        alu_operation_code_reg = 4'b0000;
-                        mem_access_operation_next = `MEM_NOP;
-                        alu_mem_operation_n_next = 1'b0;
-                        reg_wb_flag_next = 1'b0;
-                        reg_wb_data_type_next = `REG_WB_WORD;
-                        rs2_data_out_next = 32'd0;
-                        pipeline_flush_n_next = 1'b1;
+                    default : begin // TODO: invalid instruction slice
+                        
                     end
                 endcase
             end
@@ -453,20 +416,6 @@ module Top(
                             end
                             1'b1 : begin
                                 alu_operation_code_reg = `ALU_SUB_OP;
-                            end
-                            default : begin
-                                rd_reg_offset_next = 5'd0;
-                                rs1_reg_offset = 5'd0;
-                                rs2_reg_offset = 5'd0;
-                                alu_input_a_reg = 32'd0;
-                                alu_input_b_reg = 32'd0;
-                                alu_operation_code_reg = 4'b0000;
-                                mem_access_operation_next = `MEM_NOP;
-                                alu_mem_operation_n_next = 1'b0;
-                                reg_wb_flag_next = 1'b0;
-                                reg_wb_data_type_next = `REG_WB_WORD;
-                                rs2_data_out_next = 32'd0;
-                                pipeline_flush_n_next = 1'b1;
                             end
                         endcase
                     end
@@ -496,35 +445,10 @@ module Top(
                             1'b1 : begin   // SRA
                                 alu_operation_code_reg = `ALU_SRA_OP;
                             end
-                            default : begin
-                                rd_reg_offset_next = 5'd0;
-                                rs1_reg_offset = 5'd0;
-                                rs2_reg_offset = 5'd0;
-                                alu_input_a_reg = 32'd0;
-                                alu_input_b_reg = 32'd0;
-                                alu_operation_code_reg = 4'b0000;
-                                mem_access_operation_next = `MEM_NOP;
-                                alu_mem_operation_n_next = 1'b0;
-                                reg_wb_flag_next = 1'b0;
-                                reg_wb_data_type_next = `REG_WB_WORD;
-                                rs2_data_out_next = 32'd0;
-                                pipeline_flush_n_next = 1'b1;
-                            end
                         endcase
                     end
-                    default : begin
-                        rd_reg_offset_next = 5'd0;
-                        rs1_reg_offset = 5'd0;
-                        rs2_reg_offset = 5'd0;
-                        alu_input_a_reg = 32'd0;
-                        alu_input_b_reg = 32'd0;
-                        alu_operation_code_reg = 4'b0000;
-                        mem_access_operation_next = `MEM_NOP;
-                        alu_mem_operation_n_next = 1'b0;
-                        reg_wb_flag_next = 1'b0;
-                        reg_wb_data_type_next = `REG_WB_WORD;
-                        rs2_data_out_next = 32'd0;
-                        pipeline_flush_n_next = 1'b1;
+                    default : begin  // TODO: invalid opcode
+
                     end
                 endcase
             end
