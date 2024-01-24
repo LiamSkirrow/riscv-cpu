@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`include "src/defines.v"
+`include "riscv-cpu/src/defines.v"
 
 // main instruction decoder, read in opcode and set control signals accordingly
 
@@ -25,7 +25,6 @@ module InstructionDecoder(
     output reg [31:0] rs2_data_out_next,
     output reg        pipeline_flush_n_next
 );
-
 
     always @(*) begin
         // set sensible (inactive) default values for all registers

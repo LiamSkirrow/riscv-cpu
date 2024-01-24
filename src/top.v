@@ -35,7 +35,7 @@ module Top(
     wire [31:0] rs1_data_out, rs2_data_out;
     wire [31:0] pc_data_out, ir_data_out;
     wire freeze_pc;
-    reg update_pc_next, update_pc_ff, update_pc_ff_ff, update_pc_ff_ff_ff;
+    reg update_pc_ff, update_pc_ff_ff, update_pc_ff_ff_ff;
     // alu
     reg  [31:0] alu_input_a_reg, alu_input_b_reg;
     wire [31:0] alu_input_a, alu_input_b;
@@ -57,7 +57,7 @@ module Top(
     reg mem_access_done;
     reg [31:0] mem_access_data_out_bus_adjusted;
     // register write back
-    reg [4:0] rd_reg_offset_ff, rd_reg_offset_ff_ff, rd_reg_offset_ff_ff_ff, rd_reg_offset_next;
+    reg [4:0] rd_reg_offset_ff, rd_reg_offset_ff_ff, rd_reg_offset_ff_ff_ff;
     reg reg_wb_flag_ff, reg_wb_flag_ff_ff, reg_wb_flag_ff_ff_ff, reg_wb_flag_next;
     reg alu_mem_operation_n_ff, alu_mem_operation_n_ff_ff, alu_mem_operation_n_ff_ff_ff, alu_mem_operation_n_next;
     reg [31:0] alu_out_reg_ff, alu_out_reg_next;
@@ -65,6 +65,17 @@ module Top(
     reg [31:0] alu_out_reg_adjusted;
     reg [31:0] mem_data_adjusted;
     reg [31:0] rs2_data_out_ff, rs2_data_out_ff_ff, rs2_data_out_ff_ff_ff, rs2_data_out_next;
+
+    // wires for the instruction decoder
+    wire        update_pc_next;
+    wire [4:0]  rd_reg_offset_next;
+    wire [3:0]  alu_operation_code_reg;
+    wire [1:0]  mem_access_operation_next;
+    wire        alu_mem_operation_n_next;
+    wire        reg_wb_flag_next;
+    wire [2:0]  reg_wb_data_type_next;
+    wire [31:0] rs2_data_out_next;
+    wire        pipeline_flush_n_next;
 
     assign alu_input_a = alu_input_a_reg;
     assign alu_input_b = alu_input_b_reg;
@@ -211,9 +222,9 @@ module Top(
         .update_pc_next(update_pc_next), .rd_reg_offset_next(rd_reg_offset_next),
         .rs1_reg_offset(rs1_reg_offset), .rs2_reg_offset(rs2_reg_offset), .alu_input_a_reg(alu_input_a_reg),
         .alu_input_b_reg(alu_input_b_reg), .alu_operation_code_reg(alu_operation_code_reg), .mem_access_operation_next(mem_access_operation_next),
-        .alu_mem_operation_n_next(alu_mem_operation_n_next), .reg_wb_flag_next(reg_wb_flag_next), .reg_wb_data_type_next(reg_wb_data_type_next) 
+        .alu_mem_operation_n_next(alu_mem_operation_n_next), .reg_wb_flag_next(reg_wb_flag_next), .reg_wb_data_type_next(reg_wb_data_type_next), 
         .rs2_data_out_next(rs2_data_out_next), .pipeline_flush_n_next(pipeline_flush_n_next)
-    )    
+    );
     
     //********************
     // Memory Access Stage
