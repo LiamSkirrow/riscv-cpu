@@ -32,15 +32,17 @@ module InstructionDecoder(
     output reg        pipeline_flush_n_next
 );
 
-    wire rd_register_in_flight_one_cycle, rs1_register_in_flight_two_cycles;
+    wire rd_register_rs1_in_flight_one_cycle, rd_register_rs2_in_flight_one_cycle;
     
-    // TODO: NOTE: only supporting single cycle delay operand forwarding for now...
+    // TODO: is it easy to support (for example) single cycle forwarding for rs1 and also 2 cycle forwarding for rs2 at the exact same time?
+    // it's certain that we'll run into cases where we have both types of forwarding for both rs registers... need to make supporting this
+    // easy
 
     // operand forwarding logic
     //   check if the current register we're trying to read from has been modified by the previous instruction (N-1)
-    assign rd_register_in_flight_one_cycle  = (rs1_reg_offset == rd_reg_offset_1c) && (rs1_reg_offset != 32'd0);
+    assign rd_register_rs1_in_flight_one_cycle  = (rs1_reg_offset == rd_reg_offset_1c) && (rs1_reg_offset != 32'd0);
     //   check if the current register we're trying to read from has been modified by the 2nd most previous instruction (N-2)
-    // assign rs1_register_in_flight_two_cycles = (rs1_reg_offset == rs1_reg_offset_2c);
+    assign rd_register_rs2_in_flight_one_cycle  = (rs2_reg_offset == rd_reg_offset_1c) && (rs2_reg_offset != 32'd0);
 
     always @(*) begin
         // set sensible (inactive) default values for all registers
@@ -190,7 +192,7 @@ module InstructionDecoder(
                 rs2_reg_offset = 5'd0;                               // register address offset for rs2, not needed in this instruction
 
                 // operand forwarding
-                alu_input_a_reg = rd_register_in_flight_one_cycle ? alu_out_comb : rs1_data_out;  // ALU A input is the output data of rs1
+                alu_input_a_reg = rd_register_rs1_in_flight_one_cycle ? alu_out_comb : rs1_data_out;  // ALU A input is the output data of rs1
                 alu_input_b_reg = instruction_pointer_reg[31:20];                                  // ALU B input is the immediate in the instruction
                 //
 
