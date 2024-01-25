@@ -23,14 +23,14 @@ module Top(
     );
         
     // local signals
-    // pipeline control
-    reg pipeline_flush_n_next, pipeline_flush_n_ff, pipeline_flush_n_ff_ff, pipeline_flush_n_ff_ff_ff, pipeline_flush_n_ff_ff_ff_ff;
     wire int_rst_n;
     // instruction fetch
     reg [31:0] program_counter_reg, instruction_pointer_reg;
     // register file
     wire reg_rd_wrn;
     reg  [4:0]  rs1_reg_offset, rs2_reg_offset, rd_reg_offset;
+    reg  [4:0]  rs1_reg_offset_ff, rs2_reg_offset_ff;
+    // reg  [31:0] rs1_data_out_ff, rs2_data_out_ff;
     reg  [31:0] reg_data_in;
     wire [31:0] rs1_data_out, rs2_data_out;
     wire [31:0] pc_data_out, ir_data_out;
@@ -64,7 +64,7 @@ module Top(
     reg [2:0] reg_wb_data_type_next, reg_wb_data_type_ff, reg_wb_data_type_ff_ff, reg_wb_data_type_ff_ff_ff;
     reg [31:0] alu_out_reg_adjusted;
     reg [31:0] mem_data_adjusted;
-    reg [31:0] rs2_data_out_ff, rs2_data_out_ff_ff, rs2_data_out_ff_ff_ff, rs2_data_out_next;
+    reg [31:0] rs2_data_out_ff, rs2_data_out_ff_ff, /*rs2_data_out_ff_ff_ff,*/ rs2_data_out_next;
 
     // wires for the instruction decoder
     wire        update_pc_next;
@@ -81,7 +81,7 @@ module Top(
     assign alu_input_b = alu_input_b_reg;
     assign alu_operation_code = alu_operation_code_reg;
     assign alu_en = alu_en_reg;
-    assign int_rst_n = RST_N & pipeline_flush_n_ff;
+    assign int_rst_n = RST_N;
     
     // if we get any kind of jump instruction, then we need to freeze the value of the PC
     // doing this freeze in the decode pipeline stage is too late since PC will have incremented 
@@ -110,22 +110,6 @@ module Top(
     // **************** NOTE ****************
     
     // Sequential Processes
-    
-    // TODO: this might be unused and may be deleted
-    always @(posedge CK_REF, negedge RST_N) begin
-        if(!RST_N) begin
-            pipeline_flush_n_ff <= 1'b1;
-            pipeline_flush_n_ff_ff <= 1'b1;
-            pipeline_flush_n_ff_ff_ff <= 1'b1;
-            pipeline_flush_n_ff_ff_ff_ff <= 1'b1;
-        end
-        else begin 
-            pipeline_flush_n_ff <= pipeline_flush_n_ff_ff;
-            pipeline_flush_n_ff_ff <= pipeline_flush_n_ff_ff_ff;
-            pipeline_flush_n_ff_ff_ff <= pipeline_flush_n_ff_ff_ff_ff;
-            pipeline_flush_n_ff_ff_ff_ff <= pipeline_flush_n_next;
-        end
-    end
 
     always @(posedge CK_REF, negedge int_rst_n) begin
         if(!int_rst_n) begin
@@ -155,7 +139,14 @@ module Top(
 
             update_pc_ff <= 1'b0;
             update_pc_ff_ff <= 1'b0;
-            update_pc_ff_ff_ff <= 1'b0;;
+            update_pc_ff_ff_ff <= 1'b0;
+
+            rs1_reg_offset_ff <= 5'd0;
+            rs2_reg_offset_ff <= 5'd0;
+
+            // operand forwarding
+            // rs1_data_out_ff <= 32'd0;
+            // rs2_data_out_ff <= 32'd0;
         end
         else begin
             // only update the registers if HALT is not active
@@ -175,6 +166,9 @@ module Top(
                 reg_wb_data_type_ff <= reg_wb_data_type_ff_ff;
                 reg_wb_data_type_ff_ff <= reg_wb_data_type_ff_ff_ff;
                 reg_wb_data_type_ff_ff_ff <= reg_wb_data_type_next;
+                
+                // operand forwarding
+                // rs1_data_out_ff_ff <= rs1_data_out;
 
                 rs2_data_out_ff <= rs2_data_out_ff_ff;
                 rs2_data_out_ff_ff <= rs2_data_out_next;
@@ -188,6 +182,11 @@ module Top(
                 update_pc_ff <= update_pc_ff_ff;
                 update_pc_ff_ff <= update_pc_ff_ff_ff;
                 update_pc_ff_ff_ff <= update_pc_next;
+
+                // these registers are needed to perform operand forwarding
+                // rs1_reg_offset_ff <= rs1_reg_offset;
+                // rs2_reg_offset_ff <= rs2_reg_offset;
+                
             end
             
         end
@@ -216,7 +215,8 @@ module Top(
     // given the current instruction, decode the relevant fields and pass out the control signals to the top level
     InstructionDecoder inst_instruction_decoder(
         .instruction_pointer_reg(instruction_pointer_reg), .rs1_data_out(rs1_data_out), .rs2_data_out(rs2_data_out),
-        .update_pc_next(update_pc_next), .rd_reg_offset_next(rd_reg_offset_next),
+        .rs1_reg_offset_ff(rs1_reg_offset_ff), .rs2_reg_offset_ff(rs2_reg_offset_ff), .rs1_data_out_ff(rs2_reg_offset_ff),
+        .rs2_data_out_ff(rs2_data_out_ff), .update_pc_next(update_pc_next), .rd_reg_offset_next(rd_reg_offset_next),
         .rs1_reg_offset(rs1_reg_offset), .rs2_reg_offset(rs2_reg_offset), .alu_input_a_reg(alu_input_a_reg),
         .alu_input_b_reg(alu_input_b_reg), .alu_operation_code_reg(alu_operation_code_reg), .mem_access_operation_next(mem_access_operation_next),
         .alu_mem_operation_n_next(alu_mem_operation_n_next), .reg_wb_flag_next(reg_wb_flag_next), .reg_wb_data_type_next(reg_wb_data_type_next), 
