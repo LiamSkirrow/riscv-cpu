@@ -1,6 +1,16 @@
 `timescale 1ns / 1ps
 
-// Global includes file, define each `define constant for use in the Verilog code
+/* Build time parameters */
+
+// if not defined, then cause pipeline stalls (slow but might be easier for synthesis due to shorter combinational pathss)
+`define OPERAND_FORWARDING
+
+// enable  dynamic branch prediction and branch target prediction... comment out for default static branch 
+// prediction, where the CPU assumes all branches are *never* taken
+// `define DYNAMIC_BRANCH_PREDICTION
+
+
+/* Design parameters */
 
 // Register File 
 `define REG_FILE_PC_OFFSET 5'd32;
