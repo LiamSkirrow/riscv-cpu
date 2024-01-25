@@ -15,10 +15,7 @@ module InstructionDecoder(
     input      [31:0] instruction_pointer_reg,
     input      [31:0] rs1_data_out,
     input      [31:0] rs2_data_out,
-    input      [4:0]  rs1_reg_offset_1c,
-    input      [4:0]  rs2_reg_offset_1c,
-    input      [31:0] rs1_data_out_1c,
-    input      [31:0] rs2_data_out_1c,
+    input      [4:0]  rd_reg_offset_1c,
     input      [31:0] alu_out_comb,
     output reg        update_pc_next,
     output reg [4:0]  rd_reg_offset_next,
@@ -35,15 +32,13 @@ module InstructionDecoder(
     output reg        pipeline_flush_n_next
 );
 
-    wire rs1_register_in_flight_one_cycle, rs1_register_in_flight_two_cycles;
+    wire rd_register_in_flight_one_cycle, rs1_register_in_flight_two_cycles;
     
     // TODO: NOTE: only supporting single cycle delay operand forwarding for now...
 
-    // The single cycle case doesn't work currently since the addition result hasn't yet finished, it hasn't been latched yet 
-
     // operand forwarding logic
     //   check if the current register we're trying to read from has been modified by the previous instruction (N-1)
-    assign rs1_register_in_flight_one_cycle  = (rs1_reg_offset == rs1_reg_offset_1c) && (rs1_reg_offset != 32'd0);
+    assign rd_register_in_flight_one_cycle  = (rs1_reg_offset == rd_reg_offset_1c) && (rs1_reg_offset != 32'd0);
     //   check if the current register we're trying to read from has been modified by the 2nd most previous instruction (N-2)
     // assign rs1_register_in_flight_two_cycles = (rs1_reg_offset == rs1_reg_offset_2c);
 
@@ -195,8 +190,8 @@ module InstructionDecoder(
                 rs2_reg_offset = 5'd0;                               // register address offset for rs2, not needed in this instruction
 
                 // operand forwarding
-                alu_input_a_reg = rs1_register_in_flight_one_cycle ? alu_out_comb : rs1_data_out;  // ALU A input is the output data of rs1
-                alu_input_b_reg = instruction_pointer_reg[31:20];                                 // ALU B input is the immediate in the instruction
+                alu_input_a_reg = rd_register_in_flight_one_cycle ? alu_out_comb : rs1_data_out;  // ALU A input is the output data of rs1
+                alu_input_b_reg = instruction_pointer_reg[31:20];                                  // ALU B input is the immediate in the instruction
                 //
 
                 mem_access_operation_next = `MEM_NOP; // memory access stage will perform a memory load operation

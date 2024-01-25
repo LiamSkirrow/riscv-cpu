@@ -64,8 +64,7 @@ module Top(
     reg [31:0] mem_data_adjusted;
     reg [31:0] rs2_data_out_2c, rs2_data_out_1c, rs2_data_out_next;
     reg [4:0]  rs1_reg_offset, rs2_reg_offset, rd_reg_offset;
-    reg [4:0]  rs1_reg_offset_1c, rs2_reg_offset_1c;
-    reg [31:0] rs1_data_out_1c;
+    reg [31:0] rd_reg_data_1c;
 
     // wires for the instruction decoder
     wire        update_pc_next;
@@ -130,8 +129,6 @@ module Top(
             reg_wb_data_type_2c <= 3'b000;
             reg_wb_data_type_1c <= 3'b000;
 
-            rs1_data_out_1c <= 32'd0;
-
             rs2_data_out_2c <= 32'd0;
             rs2_data_out_1c <= 32'd0;
 
@@ -143,9 +140,6 @@ module Top(
             update_pc_3c <= 1'b0;
             update_pc_2c <= 1'b0;
             update_pc_1c <= 1'b0;
-
-            rs1_reg_offset_1c <= 5'd0;
-            rs2_reg_offset_1c <= 5'd0;
         end
         else begin
             // only update the registers if HALT is not active
@@ -166,8 +160,6 @@ module Top(
                 reg_wb_data_type_2c <= reg_wb_data_type_1c;
                 reg_wb_data_type_1c <= reg_wb_data_type_next;
                 
-                rs1_data_out_1c <= rs1_data_out;
-
                 rs2_data_out_2c <= rs2_data_out_1c;
                 rs2_data_out_1c <= rs2_data_out_next;
 
@@ -180,10 +172,6 @@ module Top(
                 update_pc_3c <= update_pc_2c;
                 update_pc_2c <= update_pc_1c;
                 update_pc_1c <= update_pc_next;
-
-                // these registers are needed to perform operand forwarding
-                rs1_reg_offset_1c <= rs1_reg_offset;
-                rs2_reg_offset_1c <= rs2_reg_offset;
             end
         end
     end
@@ -211,12 +199,12 @@ module Top(
     // given the current instruction, decode the relevant fields and pass out the control signals to the top level
     InstructionDecoder inst_instruction_decoder(
         .instruction_pointer_reg(instruction_pointer_reg), .rs1_data_out(rs1_data_out), .rs2_data_out(rs2_data_out),
-        .rs1_reg_offset_1c(rs1_reg_offset_1c), .rs2_reg_offset_1c(rs2_reg_offset_1c), .rs1_data_out_1c(rs1_data_out_1c),
-        .rs2_data_out_1c(rs2_data_out_1c), .update_pc_next(update_pc_next), .rd_reg_offset_next(rd_reg_offset_next),
+        .update_pc_next(update_pc_next), .rd_reg_offset_next(rd_reg_offset_next),
         .rs1_reg_offset(rs1_reg_offset), .rs2_reg_offset(rs2_reg_offset), .alu_input_a_reg(alu_input_a_reg),
         .alu_input_b_reg(alu_input_b_reg), .alu_operation_code_reg(alu_operation_code_reg), .mem_access_operation_next(mem_access_operation_next),
         .alu_mem_operation_n_next(alu_mem_operation_n_next), .reg_wb_flag_next(reg_wb_flag_next), .reg_wb_data_type_next(reg_wb_data_type_next), 
-        .rs2_data_out_next(rs2_data_out_next), .pipeline_flush_n_next(pipeline_flush_n_next), .alu_out_comb(alu_out_comb)
+        .rs2_data_out_next(rs2_data_out_next), .pipeline_flush_n_next(pipeline_flush_n_next), .alu_out_comb(alu_out_comb), 
+        .rd_reg_offset_1c(rd_reg_offset_1c)
     );
     
     //********************
