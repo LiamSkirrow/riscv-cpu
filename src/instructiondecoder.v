@@ -7,6 +7,10 @@
 //       - define all the *_next signals in this module and pass them out to the top level
 //         which is where they shall get latched/registered
 
+// TODO: each opcode sub-case has its own default statement we should flag an invalid opcode by using an assert()
+//       this will be useful for simulation, but what do we expect to happen on the CPU? Need to handle this case
+//       maybe create an exception mechanism? May need an interrupt controller to be present...
+
 module InstructionDecoder(
     input      [31:0] instruction_pointer_reg,
     input      [31:0] rs1_data_out,
@@ -299,7 +303,5 @@ module InstructionDecoder(
             end
         endcase
     end
-
-
 
 endmodule

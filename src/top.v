@@ -198,8 +198,6 @@ module Top(
     // Instruction Fetch Stage
     //************************
 
-    // shifted the PC into Register_File.v for ease of reading/writing
-
     // IR register sequential process, using a SYNCHRONOUS reset here (TODO: figure out if this is an issue)
     always @(posedge CK_REF) begin
         if(!RST_N) begin 
@@ -214,9 +212,8 @@ module Top(
     //*************************
     // Instruction Decode Stage
     //*************************
-    // TODO: each opcode sub-case has its own default statement we should flag an invalid opcode by using an assert()
-    //       this will be useful for simulation, but what do we expect to happen on the CPU? Need to handle this case
-    //       maybe create an exception mechanism? May need an interrupt controller to be present...
+    
+    // given the current instruction, decode the relevant fields and pass out the control signals to the top level
     InstructionDecoder inst_instruction_decoder(
         .instruction_pointer_reg(instruction_pointer_reg), .rs1_data_out(rs1_data_out), .rs2_data_out(rs2_data_out),
         .update_pc_next(update_pc_next), .rd_reg_offset_next(rd_reg_offset_next),
