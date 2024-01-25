@@ -37,8 +37,9 @@ module Top(
     reg  [31:0] alu_input_a_reg, alu_input_b_reg;
     wire [31:0] alu_input_a, alu_input_b;
     wire [31:0] alu_output;
-    reg  [3:0] alu_operation_code_reg;
-    wire [3:0] alu_operation_code;
+    reg  [3:0]  alu_operation_code_reg;
+    wire [3:0]  alu_operation_code;
+    wire [31:0] alu_out_comb;
     reg alu_en_reg;
     wire alu_en;
     wire alu_carry_flag;
@@ -99,7 +100,7 @@ module Top(
     ALU inst_alu (
         .CK_REF(CK_REF), .RST_N(RST_N), .ALU_EN(alu_en), .OP_VAL(alu_operation_code),
         .A(alu_input_a), .B(alu_input_b), .OUT(alu_output), .CARRY_FLAG(alu_carry_flag),
-        .ZERO_FLAG(alu_zero_flag), .OVERFLOW_FLAG(alu_overflow_flag), .ALU_DONE(alu_done), .HALT(HALT)
+        .ZERO_FLAG(alu_zero_flag), .OVERFLOW_FLAG(alu_overflow_flag), .ALU_DONE(alu_done), .HALT(HALT), .OUT_comb(alu_out_comb)
     );
 
     // **************** NOTE ****************
@@ -215,7 +216,7 @@ module Top(
         .rs1_reg_offset(rs1_reg_offset), .rs2_reg_offset(rs2_reg_offset), .alu_input_a_reg(alu_input_a_reg),
         .alu_input_b_reg(alu_input_b_reg), .alu_operation_code_reg(alu_operation_code_reg), .mem_access_operation_next(mem_access_operation_next),
         .alu_mem_operation_n_next(alu_mem_operation_n_next), .reg_wb_flag_next(reg_wb_flag_next), .reg_wb_data_type_next(reg_wb_data_type_next), 
-        .rs2_data_out_next(rs2_data_out_next), .pipeline_flush_n_next(pipeline_flush_n_next)
+        .rs2_data_out_next(rs2_data_out_next), .pipeline_flush_n_next(pipeline_flush_n_next), .alu_out_comb(alu_out_comb)
     );
     
     //********************

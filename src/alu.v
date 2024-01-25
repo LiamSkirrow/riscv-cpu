@@ -19,7 +19,8 @@ module ALU(
     input wire [31:0] A,   // ALU input 32 bit value
     input wire [31:0] B,   // ALU input 32 bit value
     
-    output wire [31:0] OUT,    // ALU output 32 bit value
+    output wire [31:0] OUT,      // ALU output 32 bit value
+    output wire [31:0] OUT_comb, // UNREGISTERED combinational output, needed for operand forwarding for consecutive instructions
     output wire CARRY_FLAG,
     output wire ZERO_FLAG,
     output wire OVERFLOW_FLAG,
@@ -114,9 +115,10 @@ module ALU(
     end 
     
     //top-level assigns
-    assign OUT = OUT_reg[31:0];
+    assign OUT        = OUT_reg[31:0];
+    assign OUT_comb   = OUT_next[31:0];
     assign CARRY_FLAG = OUT_reg[32];
-    assign ZERO_FLAG = (OUT_reg[31:0] == 32'h0000_0000) ? 1'b1 : 1'b0;
+    assign ZERO_FLAG  = (OUT_reg[31:0] == 32'h0000_0000) ? 1'b1 : 1'b0;
     //assign OVERFLOW_FLAG = ???;
     
     assign ALU_DONE = alu_done_ff;
