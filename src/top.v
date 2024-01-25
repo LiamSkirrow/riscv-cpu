@@ -28,14 +28,11 @@ module Top(
     reg [31:0] program_counter_reg, instruction_pointer_reg;
     // register file
     wire reg_rd_wrn;
-    reg  [4:0]  rs1_reg_offset, rs2_reg_offset, rd_reg_offset;
-    reg  [4:0]  rs1_reg_offset_ff, rs2_reg_offset_ff;
-    // reg  [31:0] rs1_data_out_ff, rs2_data_out_ff;
     reg  [31:0] reg_data_in;
     wire [31:0] rs1_data_out, rs2_data_out;
     wire [31:0] pc_data_out, ir_data_out;
     wire freeze_pc;
-    reg update_pc_ff, update_pc_ff_ff, update_pc_ff_ff_ff;
+    reg update_pc_3c, update_pc_2c, update_pc_1c;
     // alu
     reg  [31:0] alu_input_a_reg, alu_input_b_reg;
     wire [31:0] alu_input_a, alu_input_b;
@@ -49,22 +46,25 @@ module Top(
     wire alu_overflow_flag;
     wire alu_done;
     // memory access
-    reg [1:0] mem_access_operation_ff, mem_access_operation_ff_ff, mem_access_operation_next;
+    reg [1:0] mem_access_operation_2c, mem_access_operation_1c, mem_access_operation_next;
     reg mem_access_read_wrn;
     reg [15:0] mem_access_address_bus;
     reg [31:0] mem_access_data_out_bus;
-    reg [31:0] mem_data_ff, mem_data_next;
+    reg [31:0] mem_data_1c, mem_data_next;
     reg mem_access_done;
     reg [31:0] mem_access_data_out_bus_adjusted;
-    // register write back
-    reg [4:0] rd_reg_offset_ff, rd_reg_offset_ff_ff, rd_reg_offset_ff_ff_ff;
-    reg reg_wb_flag_ff, reg_wb_flag_ff_ff, reg_wb_flag_ff_ff_ff, reg_wb_flag_next;
-    reg alu_mem_operation_n_ff, alu_mem_operation_n_ff_ff, alu_mem_operation_n_ff_ff_ff, alu_mem_operation_n_next;
-    reg [31:0] alu_out_reg_ff, alu_out_reg_next;
-    reg [2:0] reg_wb_data_type_next, reg_wb_data_type_ff, reg_wb_data_type_ff_ff, reg_wb_data_type_ff_ff_ff;
+    // register write back and operand forwarding
+    reg [4:0] rd_reg_offset_3c, rd_reg_offset_2c, rd_reg_offset_1c;
+    reg reg_wb_flag_3c, reg_wb_flag_2c, reg_wb_flag_1c, reg_wb_flag_next;
+    reg alu_mem_operation_n_3c, alu_mem_operation_n_2c, alu_mem_operation_n_1c, alu_mem_operation_n_next;
+    reg [31:0] alu_out_reg_1c, alu_out_reg_next;
+    reg [2:0] reg_wb_data_type_next, reg_wb_data_type_3c, reg_wb_data_type_2c, reg_wb_data_type_1c;
     reg [31:0] alu_out_reg_adjusted;
     reg [31:0] mem_data_adjusted;
-    reg [31:0] rs2_data_out_ff, rs2_data_out_ff_ff, /*rs2_data_out_ff_ff_ff,*/ rs2_data_out_next;
+    reg [31:0] rs2_data_out_2c, rs2_data_out_1c, rs2_data_out_next;
+    reg [4:0]  rs1_reg_offset, rs2_reg_offset, rd_reg_offset;
+    reg [4:0]  rs1_reg_offset_1c, rs2_reg_offset_1c;
+    reg [31:0] rs1_data_out_1c;
 
     // wires for the instruction decoder
     wire        update_pc_next;
@@ -92,7 +92,7 @@ module Top(
     RegisterFile inst_reg_file (
         .CK_REF(CK_REF), .RST_N(RST_N), .REG_RD_WRN(reg_rd_wrn), .RS1_REG_OFFSET(rs1_reg_offset), 
         .RS2_REG_OFFSET(rs2_reg_offset), .RD_REG_OFFSET(rd_reg_offset), .REG_DATA_IN(reg_data_in), 
-        .RS1_DATA_OUT(rs1_data_out), .RS2_DATA_OUT(rs2_data_out), .PC_DATA_OUT(pc_data_out), .UPDATE_PC(update_pc_ff),
+        .RS1_DATA_OUT(rs1_data_out), .RS2_DATA_OUT(rs2_data_out), .PC_DATA_OUT(pc_data_out), .UPDATE_PC(update_pc_3c),
         .FREEZE_PC(freeze_pc), .HALT(HALT)
     );
 
@@ -113,82 +113,77 @@ module Top(
 
     always @(posedge CK_REF, negedge int_rst_n) begin
         if(!int_rst_n) begin
-            rd_reg_offset_ff <= 5'b00000;
-            rd_reg_offset_ff_ff <= 5'b00000;
-            rd_reg_offset_ff_ff_ff <= 5'b00000;
+            rd_reg_offset_3c <= 5'b00000;
+            rd_reg_offset_2c <= 5'b00000;
+            rd_reg_offset_1c <= 5'b00000;
 
-            reg_wb_flag_ff <= 1'b0;
-            reg_wb_flag_ff_ff <= 1'b0;
-            reg_wb_flag_ff_ff_ff <= 1'b0;
+            reg_wb_flag_3c <= 1'b0;
+            reg_wb_flag_2c <= 1'b0;
+            reg_wb_flag_1c <= 1'b0;
             
-            alu_mem_operation_n_ff <= 1'b0;
-            alu_mem_operation_n_ff_ff <= 1'b0;
-            alu_mem_operation_n_ff_ff_ff <= 1'b0;
+            alu_mem_operation_n_3c <= 1'b0;
+            alu_mem_operation_n_2c <= 1'b0;
+            alu_mem_operation_n_1c <= 1'b0;
 
-            reg_wb_data_type_ff <= 3'b000;
-            reg_wb_data_type_ff_ff <= 3'b000;
-            reg_wb_data_type_ff_ff_ff <= 3'b000;
+            reg_wb_data_type_3c <= 3'b000;
+            reg_wb_data_type_2c <= 3'b000;
+            reg_wb_data_type_1c <= 3'b000;
 
-            rs2_data_out_ff <= 32'd0;
-            rs2_data_out_ff_ff <= 32'd0;
+            rs1_data_out_1c <= 32'd0;
 
-            alu_out_reg_ff <= 32'h0000_0000;
-            mem_data_ff <= 32'h0000_0000;
-            mem_access_operation_ff <= 2'b00;
-            mem_access_operation_ff_ff <= 2'b00;
+            rs2_data_out_2c <= 32'd0;
+            rs2_data_out_1c <= 32'd0;
 
-            update_pc_ff <= 1'b0;
-            update_pc_ff_ff <= 1'b0;
-            update_pc_ff_ff_ff <= 1'b0;
+            alu_out_reg_1c <= 32'h0000_0000;
+            mem_data_1c <= 32'h0000_0000;
+            mem_access_operation_2c <= 2'b00;
+            mem_access_operation_1c <= 2'b00;
 
-            rs1_reg_offset_ff <= 5'd0;
-            rs2_reg_offset_ff <= 5'd0;
+            update_pc_3c <= 1'b0;
+            update_pc_2c <= 1'b0;
+            update_pc_1c <= 1'b0;
 
-            // operand forwarding
-            // rs1_data_out_ff <= 32'd0;
-            // rs2_data_out_ff <= 32'd0;
+            rs1_reg_offset_1c <= 5'd0;
+            rs2_reg_offset_1c <= 5'd0;
         end
         else begin
             // only update the registers if HALT is not active
             if(!HALT) begin
-                rd_reg_offset_ff <= rd_reg_offset_ff_ff;
-                rd_reg_offset_ff_ff <= rd_reg_offset_ff_ff_ff;
-                rd_reg_offset_ff_ff_ff <= rd_reg_offset_next;
+                rd_reg_offset_3c <= rd_reg_offset_2c;
+                rd_reg_offset_2c <= rd_reg_offset_1c;
+                rd_reg_offset_1c <= rd_reg_offset_next;
 
-                reg_wb_flag_ff <= reg_wb_flag_ff_ff;
-                reg_wb_flag_ff_ff <= reg_wb_flag_ff_ff_ff;
-                reg_wb_flag_ff_ff_ff <= reg_wb_flag_next;
+                reg_wb_flag_3c <= reg_wb_flag_2c;
+                reg_wb_flag_2c <= reg_wb_flag_1c;
+                reg_wb_flag_1c <= reg_wb_flag_next;
                 
-                alu_mem_operation_n_ff <= alu_mem_operation_n_ff_ff;
-                alu_mem_operation_n_ff_ff <= alu_mem_operation_n_ff_ff_ff;
-                alu_mem_operation_n_ff_ff_ff <= alu_mem_operation_n_next;
+                alu_mem_operation_n_3c <= alu_mem_operation_n_2c;
+                alu_mem_operation_n_2c <= alu_mem_operation_n_1c;
+                alu_mem_operation_n_1c <= alu_mem_operation_n_next;
 
-                reg_wb_data_type_ff <= reg_wb_data_type_ff_ff;
-                reg_wb_data_type_ff_ff <= reg_wb_data_type_ff_ff_ff;
-                reg_wb_data_type_ff_ff_ff <= reg_wb_data_type_next;
+                reg_wb_data_type_3c <= reg_wb_data_type_2c;
+                reg_wb_data_type_2c <= reg_wb_data_type_1c;
+                reg_wb_data_type_1c <= reg_wb_data_type_next;
                 
-                // operand forwarding
-                // rs1_data_out_ff_ff <= rs1_data_out;
+                rs1_data_out_1c <= rs1_data_out;
 
-                rs2_data_out_ff <= rs2_data_out_ff_ff;
-                rs2_data_out_ff_ff <= rs2_data_out_next;
+                rs2_data_out_2c <= rs2_data_out_1c;
+                rs2_data_out_1c <= rs2_data_out_next;
 
-                mem_access_operation_ff <= mem_access_operation_ff_ff;
-                mem_access_operation_ff_ff <= mem_access_operation_next;
+                mem_access_operation_2c <= mem_access_operation_1c;
+                mem_access_operation_1c <= mem_access_operation_next;
 
-                mem_data_ff <= MEM_ACCESS_DATA_IN_BUS;
-                alu_out_reg_ff <= alu_out_reg_next;
+                mem_data_1c <= MEM_ACCESS_DATA_IN_BUS;
+                alu_out_reg_1c <= alu_out_reg_next;
 
-                update_pc_ff <= update_pc_ff_ff;
-                update_pc_ff_ff <= update_pc_ff_ff_ff;
-                update_pc_ff_ff_ff <= update_pc_next;
+                update_pc_3c <= update_pc_2c;
+                update_pc_2c <= update_pc_1c;
+                update_pc_1c <= update_pc_next;
 
                 // these registers are needed to perform operand forwarding
-                // rs1_reg_offset_ff <= rs1_reg_offset;
-                // rs2_reg_offset_ff <= rs2_reg_offset;
-                
+                rs1_reg_offset_1c <= rs1_reg_offset;
+                rs2_reg_offset_1c <= rs2_reg_offset;
             end
-            
         end
     end
 
@@ -215,8 +210,8 @@ module Top(
     // given the current instruction, decode the relevant fields and pass out the control signals to the top level
     InstructionDecoder inst_instruction_decoder(
         .instruction_pointer_reg(instruction_pointer_reg), .rs1_data_out(rs1_data_out), .rs2_data_out(rs2_data_out),
-        .rs1_reg_offset_ff(rs1_reg_offset_ff), .rs2_reg_offset_ff(rs2_reg_offset_ff), .rs1_data_out_ff(rs2_reg_offset_ff),
-        .rs2_data_out_ff(rs2_data_out_ff), .update_pc_next(update_pc_next), .rd_reg_offset_next(rd_reg_offset_next),
+        .rs1_reg_offset_1c(rs1_reg_offset_1c), .rs2_reg_offset_1c(rs2_reg_offset_1c), .rs1_data_out_1c(rs1_data_out_1c),
+        .rs2_data_out_1c(rs2_data_out_1c), .update_pc_next(update_pc_next), .rd_reg_offset_next(rd_reg_offset_next),
         .rs1_reg_offset(rs1_reg_offset), .rs2_reg_offset(rs2_reg_offset), .alu_input_a_reg(alu_input_a_reg),
         .alu_input_b_reg(alu_input_b_reg), .alu_operation_code_reg(alu_operation_code_reg), .mem_access_operation_next(mem_access_operation_next),
         .alu_mem_operation_n_next(alu_mem_operation_n_next), .reg_wb_flag_next(reg_wb_flag_next), .reg_wb_data_type_next(reg_wb_data_type_next), 
@@ -229,15 +224,15 @@ module Top(
 
     // decode the word/halfword/byte
     always @(*) begin
-        case (reg_wb_data_type_ff_ff) 
+        case (reg_wb_data_type_2c) 
             3'b000 : begin   // WORD
-                mem_access_data_out_bus_adjusted = rs2_data_out_ff;
+                mem_access_data_out_bus_adjusted = rs2_data_out_2c;
             end
             3'b010 : begin   // SIGNED HALFWORD
-                mem_access_data_out_bus_adjusted = $signed(rs2_data_out_ff[15:0]);
+                mem_access_data_out_bus_adjusted = $signed(rs2_data_out_2c[15:0]);
             end
             3'b100 : begin   // SIGNED BYTE
-                mem_access_data_out_bus_adjusted = $signed(rs2_data_out_ff[7:0]);
+                mem_access_data_out_bus_adjusted = $signed(rs2_data_out_2c[7:0]);
             end
             default : begin
                 mem_access_data_out_bus_adjusted = 32'hDEAD_BEEF; //TODO: replace with 32'd0
@@ -248,7 +243,7 @@ module Top(
     always @(*) begin
         // only proceed if the ALU_DONE flag is high (up to the correct stage in the pipeline)
         if(alu_done) begin
-            case (mem_access_operation_ff) 
+            case (mem_access_operation_2c) 
                 2'b00 : begin   // MEM LOAD
                     // set top level memory interface READ bit
                     // set the address bus
@@ -291,25 +286,25 @@ module Top(
     //********************
     
     // ensure the reg_rd_wrn flag is low only when register write-back occurs
-    assign reg_rd_wrn = (reg_wb_flag_ff) ? 1'b0 : 1'b1;
+    assign reg_rd_wrn = (reg_wb_flag_3c) ? 1'b0 : 1'b1;
 
     // decode the word/halfword/byte, signed/unsigned indicator bus 
     always @(*) begin
-        case (reg_wb_data_type_ff) 
+        case (reg_wb_data_type_3c) 
             3'b000 : begin   // WORD
-                mem_data_adjusted = mem_data_ff;
+                mem_data_adjusted = mem_data_1c;
             end
             3'b001 : begin   // UNSIGNED HALFWORD
-                mem_data_adjusted = mem_data_ff[15:0];
+                mem_data_adjusted = mem_data_1c[15:0];
             end
             3'b010 : begin   // SIGNED HALFWORD
-                mem_data_adjusted = $signed(mem_data_ff[15:0]);
+                mem_data_adjusted = $signed(mem_data_1c[15:0]);
             end
             3'b011 : begin   // UNSIGNED BYTE
-                mem_data_adjusted = mem_data_ff[7:0];
+                mem_data_adjusted = mem_data_1c[7:0];
             end
             3'b100 : begin   // SIGNED BYTE
-                mem_data_adjusted = $signed(mem_data_ff[7:0]);
+                mem_data_adjusted = $signed(mem_data_1c[7:0]);
             end
             default : begin
                 mem_data_adjusted = 32'd0;
@@ -319,10 +314,10 @@ module Top(
 
     always @(*) begin
         // only proceed if the reg_wb_flag flag is high (up to the correct stage in the pipeline)
-        if(reg_wb_flag_ff) begin   // write the data read from either memory or ALU to the value stored in rd_reg_offset_ff
-            rd_reg_offset = rd_reg_offset_ff;
+        if(reg_wb_flag_3c) begin   // write the data read from either memory or ALU to the value stored in rd_reg_offset_3c
+            rd_reg_offset = rd_reg_offset_3c;
             // check whether write value is ALU ouput (math/logical instruction) or memory output (load/store instruction)
-            reg_data_in = alu_mem_operation_n_ff ? alu_out_reg_ff : mem_data_adjusted;
+            reg_data_in = alu_mem_operation_n_3c ? alu_out_reg_1c : mem_data_adjusted;
         end
         else begin
             // address the zero register r0, no write operation will occur
