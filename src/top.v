@@ -58,7 +58,7 @@ module Top(
     reg [4:0] rd_reg_offset_3c, rd_reg_offset_2c, rd_reg_offset_1c;
     reg reg_wb_flag_3c, reg_wb_flag_2c, reg_wb_flag_1c, reg_wb_flag_next;
     reg alu_mem_operation_n_3c, alu_mem_operation_n_2c, alu_mem_operation_n_1c, alu_mem_operation_n_next;
-    reg [31:0] alu_out_reg_1c, alu_out_reg_next;
+    reg [31:0] alu_out_reg_2c, alu_out_reg_1c, alu_out_reg_next;
     reg [2:0] reg_wb_data_type_next, reg_wb_data_type_3c, reg_wb_data_type_2c, reg_wb_data_type_1c;
     reg [31:0] alu_out_reg_adjusted;
     reg [31:0] mem_data_adjusted;
@@ -132,6 +132,7 @@ module Top(
             rs2_data_out_2c <= 32'd0;
             rs2_data_out_1c <= 32'd0;
 
+            alu_out_reg_2c <= 32'h0000_0000;
             alu_out_reg_1c <= 32'h0000_0000;
             mem_data_1c <= 32'h0000_0000;
             mem_access_operation_2c <= 2'b00;
@@ -167,6 +168,7 @@ module Top(
                 mem_access_operation_1c <= mem_access_operation_next;
 
                 mem_data_1c <= MEM_ACCESS_DATA_IN_BUS;
+                alu_out_reg_2c <= alu_out_reg_1c;
                 alu_out_reg_1c <= alu_out_reg_next;
 
                 update_pc_3c <= update_pc_2c;
@@ -203,8 +205,9 @@ module Top(
         .rs1_reg_offset(rs1_reg_offset), .rs2_reg_offset(rs2_reg_offset), .alu_input_a_reg(alu_input_a_reg),
         .alu_input_b_reg(alu_input_b_reg), .alu_operation_code_reg(alu_operation_code_reg), .mem_access_operation_next(mem_access_operation_next),
         .alu_mem_operation_n_next(alu_mem_operation_n_next), .reg_wb_flag_next(reg_wb_flag_next), .reg_wb_data_type_next(reg_wb_data_type_next), 
-        .rs2_data_out_next(rs2_data_out_next), .pipeline_flush_n_next(pipeline_flush_n_next), .alu_out_comb(alu_out_comb), 
-        .rd_reg_offset_1c(rd_reg_offset_1c)
+        .rs2_data_out_next(rs2_data_out_next), .pipeline_flush_n_next(pipeline_flush_n_next), .alu_out_comb(alu_out_comb), .alu_output(alu_output),
+        .rd_reg_offset_1c(rd_reg_offset_1c), .rd_reg_offset_2c(rd_reg_offset_2c), .rd_reg_offset_3c(rd_reg_offset_3c),
+        .alu_out_reg_1c(alu_out_reg_1c), .alu_out_reg_2c(alu_out_reg_2c)
     );
     
     //********************

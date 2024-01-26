@@ -16,7 +16,12 @@ module InstructionDecoder(
     input      [31:0] rs1_data_out,
     input      [31:0] rs2_data_out,
     input      [4:0]  rd_reg_offset_1c,
+    input      [4:0]  rd_reg_offset_2c,
+    input      [4:0]  rd_reg_offset_3c,
     input      [31:0] alu_out_comb,
+    input      [31:0] alu_output,
+    input      [31:0] alu_out_reg_1c,
+    input      [31:0] alu_out_reg_2c,
     output reg        update_pc_next,
     output reg [4:0]  rd_reg_offset_next,
     output reg [4:0]  rs1_reg_offset,
@@ -33,8 +38,14 @@ module InstructionDecoder(
 );
 
     wire rd_register_rs1_in_flight_one_cycle, rd_register_rs2_in_flight_one_cycle;
+    wire rd_register_rs1_in_flight_two_cycle, rd_register_rs2_in_flight_two_cycle;
+    wire rd_register_rs1_in_flight_three_cycle, rd_register_rs2_in_flight_three_cycle;
 
     // TODO: might be nice to parameterise operand forwarding, doesn't look particularly difficult
+
+    // TODO: need to figure out a priority system for operands in the case where two (or more) instructions
+    //       modify the same register, the same register will be in flight at multiple stages. I think I need to prioritise
+    //       in the order: one_cycle -> two_cycle -> three_cycle
 
     // TODO:
     // - single clock cycle forwarding is complete
@@ -48,8 +59,18 @@ module InstructionDecoder(
     // operand forwarding logic
     //   check if the current register we're trying to read from has been modified by the previous instruction (N-1)
     assign rd_register_rs1_in_flight_one_cycle  = (rs1_reg_offset == rd_reg_offset_1c) && (rs1_reg_offset != 32'd0);
-    //   check if the current register we're trying to read from has been modified by the 2nd most previous instruction (N-2)
+    //   check if the current register we're trying to read from has been modified by the previous instruction (N-1)
     assign rd_register_rs2_in_flight_one_cycle  = (rs2_reg_offset == rd_reg_offset_1c) && (rs2_reg_offset != 32'd0);
+
+    //   check if the current register we're trying to read from has been modified by the 2nd most previous instruction (N-2)
+    assign rd_register_rs1_in_flight_two_cycle  = (rs1_reg_offset == rd_reg_offset_2c) && (rs1_reg_offset != 32'd0);
+    //   check if the current register we're trying to read from has been modified by the 2nd most previous instruction (N-2)
+    assign rd_register_rs2_in_flight_two_cycle  = (rs2_reg_offset == rd_reg_offset_2c) && (rs2_reg_offset != 32'd0);
+
+    //   check if the current register we're trying to read from has been modified by the 3rd most previous instruction (N-3)
+    assign rd_register_rs1_in_flight_three_cycle  = (rs1_reg_offset == rd_reg_offset_3c) && (rs1_reg_offset != 32'd0);
+    //   check if the current register we're trying to read from has been modified by the 3rd most previous instruction (N-3)
+    assign rd_register_rs2_in_flight_three_cycle  = (rs2_reg_offset == rd_reg_offset_3c) && (rs2_reg_offset != 32'd0);
 
     always @(*) begin
         // set sensible (inactive) default values for all registers
@@ -199,8 +220,16 @@ module InstructionDecoder(
                 rs2_reg_offset = 5'd0;                               // register address offset for rs2, not needed in this instruction
 
                 // operand forwarding
-                alu_input_a_reg = rd_register_rs1_in_flight_one_cycle ? alu_out_comb : rs1_data_out; // ALU A input is the output data of rs1
-                alu_input_b_reg = instruction_pointer_reg[31:20];                                    // ALU B input is the immediate in the instruction
+// TODO: could be worth moving this logic up above so it doesn't have to be copied and pasted for each case...
+`ifndef OPERAND_FORWARDING
+                alu_input_a_reg = rs1_data_out;  // ALU A input is the output data of rs1
+`else
+                alu_input_a_reg = rd_register_rs1_in_flight_one_cycle ? alu_out_comb                                           : 
+                                                                      ((rd_register_rs1_in_flight_two_cycle   ? alu_output     : 
+                                                                       (rd_register_rs1_in_flight_three_cycle ? alu_out_reg_1c : 
+                                                                        rs1_data_out)));  // ALU A input is the output data of rs1 
+`endif
+                alu_input_b_reg = instruction_pointer_reg[31:20];                         // ALU B input is the immediate in the instruction
                 //
 
                 mem_access_operation_next = `MEM_NOP; // memory access stage will perform a memory load operation
