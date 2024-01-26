@@ -40,37 +40,50 @@ module InstructionDecoder(
     wire rd_register_rs1_in_flight_one_cycle, rd_register_rs2_in_flight_one_cycle;
     wire rd_register_rs1_in_flight_two_cycle, rd_register_rs2_in_flight_two_cycle;
     wire rd_register_rs1_in_flight_three_cycle, rd_register_rs2_in_flight_three_cycle;
+    wire [31:0] alu_input_a_wire, alu_input_b_wire;
 
     // TODO: might be nice to parameterise operand forwarding, doesn't look particularly difficult
 
     // TODO: need to figure out a priority system for operands in the case where two (or more) instructions
     //       modify the same register, the same register will be in flight at multiple stages. I think I need to prioritise
     //       in the order: one_cycle -> two_cycle -> three_cycle
-
-    // TODO:
-    // - single clock cycle forwarding is complete
-    // I've observed 2 cycle and 3 cycle Read-After-Write hazards, need to add the registers at the top level for those cases and plumbing
-    // here in order to mark operand forwarding as complete!
     
     // TODO: is it easy to support (for example) single cycle forwarding for rs1 and also 2 cycle forwarding for rs2 at the exact same time?
     // it's certain that we'll run into cases where we have both types of forwarding for both rs registers... need to make supporting this
     // easy
 
     // operand forwarding logic
-    //   check if the current register we're trying to read from has been modified by the previous instruction (N-1)
+    // check if the current register we're trying to read from has been modified by the previous instruction (N-1)
     assign rd_register_rs1_in_flight_one_cycle  = (rs1_reg_offset == rd_reg_offset_1c) && (rs1_reg_offset != 32'd0);
-    //   check if the current register we're trying to read from has been modified by the previous instruction (N-1)
     assign rd_register_rs2_in_flight_one_cycle  = (rs2_reg_offset == rd_reg_offset_1c) && (rs2_reg_offset != 32'd0);
 
-    //   check if the current register we're trying to read from has been modified by the 2nd most previous instruction (N-2)
+    // check if the current register we're trying to read from has been modified by the 2nd most previous instruction (N-2)
     assign rd_register_rs1_in_flight_two_cycle  = (rs1_reg_offset == rd_reg_offset_2c) && (rs1_reg_offset != 32'd0);
-    //   check if the current register we're trying to read from has been modified by the 2nd most previous instruction (N-2)
     assign rd_register_rs2_in_flight_two_cycle  = (rs2_reg_offset == rd_reg_offset_2c) && (rs2_reg_offset != 32'd0);
 
-    //   check if the current register we're trying to read from has been modified by the 3rd most previous instruction (N-3)
+    // check if the current register we're trying to read from has been modified by the 3rd most previous instruction (N-3)
     assign rd_register_rs1_in_flight_three_cycle  = (rs1_reg_offset == rd_reg_offset_3c) && (rs1_reg_offset != 32'd0);
-    //   check if the current register we're trying to read from has been modified by the 3rd most previous instruction (N-3)
     assign rd_register_rs2_in_flight_three_cycle  = (rs2_reg_offset == rd_reg_offset_3c) && (rs2_reg_offset != 32'd0);
+
+`ifndef OPERAND_FORWARDING
+    // TODO: need to pipeline stall here for a few clock cycles
+    assign alu_input_a_wire = rs1_data_out;  // ALU A input is the output data of rs1
+    assign alu_input_b_wire = rs2_data_out;  // ALU B input is the output data of rs2
+`else
+    assign alu_input_a_wire = rd_register_rs1_in_flight_one_cycle ? alu_out_comb                                     :
+                                                            ((rd_register_rs1_in_flight_two_cycle   ? alu_output     :
+                                                             (rd_register_rs1_in_flight_three_cycle ? alu_out_reg_1c :
+                                                              rs1_data_out)));  // ALU A input, operand forwarded
+    // TODO: not sure the same logic applies to alu input b... Needs thinking
+    assign alu_input_b_wire = rd_register_rs2_in_flight_one_cycle ? alu_out_comb                                     :
+                                                            ((rd_register_rs2_in_flight_two_cycle   ? alu_output     :
+                                                             (rd_register_rs2_in_flight_three_cycle ? alu_out_reg_1c :
+                                                              rs1_data_out)));  // ALU B input, operand forwarded
+`endif
+
+    // TODO:
+    // a good test of operand forwarding would be to test against an ADD instruction, where both source registers have 
+    // been modified by previous instructions
 
     always @(*) begin
         // set sensible (inactive) default values for all registers
@@ -218,20 +231,8 @@ module InstructionDecoder(
                 rd_reg_offset_next = instruction_pointer_reg[11:7];  // destination register being written to, must be triple registered/delayed for three ck cycles
                 rs1_reg_offset = instruction_pointer_reg[19:15];     // register address offset given by rs1 in INST
                 rs2_reg_offset = 5'd0;                               // register address offset for rs2, not needed in this instruction
-
-                // operand forwarding
-// TODO: could be worth moving this logic up above so it doesn't have to be copied and pasted for each case...
-`ifndef OPERAND_FORWARDING
-                alu_input_a_reg = rs1_data_out;  // ALU A input is the output data of rs1
-`else
-                alu_input_a_reg = rd_register_rs1_in_flight_one_cycle ? alu_out_comb                                           : 
-                                                                      ((rd_register_rs1_in_flight_two_cycle   ? alu_output     : 
-                                                                       (rd_register_rs1_in_flight_three_cycle ? alu_out_reg_1c : 
-                                                                        rs1_data_out)));  // ALU A input is the output data of rs1 
-`endif
-                alu_input_b_reg = instruction_pointer_reg[31:20];                         // ALU B input is the immediate in the instruction
-                //
-
+                alu_input_a_reg = alu_input_a_wire;                // Feed wire from operand forwarding logic
+                alu_input_b_reg = instruction_pointer_reg[31:20];  // ALU B input is the immediate in the instruction
                 mem_access_operation_next = `MEM_NOP; // memory access stage will perform a memory load operation
                 alu_mem_operation_n_next = 1'b1;   // indicate to the write back stage whether to load from ALU or memory, tripled registered/delayed for three ck cycles
                 reg_wb_flag_next = 1'b1;           // register write back will occur for this instruction, must be triple registered/delayed for three ck cycles                    
