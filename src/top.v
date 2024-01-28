@@ -83,10 +83,10 @@ module Top(
     assign alu_en = alu_en_reg;
     assign int_rst_n = RST_N;
     
-    // if we get any kind of jump instruction, then we need to freeze the value of the PC
-    // doing this freeze in the decode pipeline stage is too late since PC will have incremented 
-    // to the next instruction by then
-    assign freeze_pc = update_pc_next;
+    // if we get any kind of jump instruction, then we need to freeze the value of the PC.
+    // Read the instruction straight from DMEM, we have to do this before we even latch the instruction
+    // since it would be too late by then, and the PC would have already advanced to the next address.
+    assign freeze_pc = (INST_MEM_DATA_BUS[6:0] == 7'b110_1111);
 
     // instantiate sub-modules
     RegisterFile inst_reg_file (
@@ -101,13 +101,6 @@ module Top(
         .A(alu_input_a), .B(alu_input_b), .OUT(alu_output), .CARRY_FLAG(alu_carry_flag),
         .ZERO_FLAG(alu_zero_flag), .OVERFLOW_FLAG(alu_overflow_flag), .ALU_DONE(alu_done), .HALT(HALT), .OUT_comb(alu_out_comb)
     );
-
-    // **************** NOTE ****************
-    // the below registers will (probably) need resetting
-    // when a pipeline flush occurs... might wanna AND gate RST_N with a pipeline_flush_n signal
-    // so that the registers are cleared when the pipeline is emptied, so the pipeline stages are inactive 
-    // when the pipeline is first being filled
-    // **************** NOTE ****************
     
     // Sequential Processes
 
@@ -200,6 +193,7 @@ module Top(
     
     // given the current instruction, decode the relevant fields and pass out the control signals to the top level
     InstructionDecoder inst_instruction_decoder(
+        .CK_REF(CK_REF), .RST_N(RST_N),
         .instruction_pointer_reg(instruction_pointer_reg), .rs1_data_out(rs1_data_out), .rs2_data_out(rs2_data_out),
         .update_pc_next(update_pc_next), .rd_reg_offset_next(rd_reg_offset_next),
         .rs1_reg_offset(rs1_reg_offset), .rs2_reg_offset(rs2_reg_offset), .alu_input_a_reg(alu_input_a_reg),

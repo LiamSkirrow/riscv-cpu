@@ -12,6 +12,8 @@
 //       maybe create an exception mechanism? May need an interrupt controller to be present...
 
 module InstructionDecoder(
+    input             CK_REF,
+    input             RST_N,
     input      [31:0] instruction_pointer_reg,
     input      [31:0] rs1_data_out,
     input      [31:0] rs2_data_out,
@@ -41,6 +43,9 @@ module InstructionDecoder(
     wire rd_register_rs1_in_flight_two_cycle, rd_register_rs2_in_flight_two_cycle;
     wire rd_register_rs1_in_flight_three_cycle, rd_register_rs2_in_flight_three_cycle;
     wire [31:0] alu_input_a_wire, alu_input_b_wire;
+
+    wire jump_or_branch_inst;
+    reg  [2:0] count;
 
     // TODO: might be nice to parameterise operand forwarding, doesn't look particularly difficult
 
@@ -85,6 +90,27 @@ module InstructionDecoder(
     // a good test of operand forwarding would be to test against an ADD instruction, where both source registers have 
     // been modified by previous instructions
 
+    assign jump_or_branch_inst = (instruction_pointer_reg[6:0] == 7'b110_1111) || 
+                                 (instruction_pointer_reg[6:0] == 7'b110_0111) ||
+                                 (instruction_pointer_reg[6:0] == 7'b110_0011);
+
+    always @(posedge CK_REF, negedge RST_N) begin
+        if(!RST_N) begin
+            count <= 3'd0;
+        end
+        else begin
+            if(jump_or_branch_inst) begin
+                // reset when we have decoded for 5 clock cycles
+                if(!(count == 3'd5)) begin
+                    count <= count + 3'd1;
+                end
+            end
+            else begin
+                count <= 3'd0;
+            end
+        end
+    end
+
     always @(*) begin
         // set sensible (inactive) default values for all registers
         update_pc_next = 1'b0;
@@ -117,7 +143,8 @@ module InstructionDecoder(
                 // - also, need some logic to say that we want to write that same ALU output value to the PC in 
                 //   order to perform the actual jump
 
-                update_pc_next = 1'b1;   // in three clock cycles, update the PC to the decoded value below
+                // create a single cycle pulse to ensure we don't execute the same instruction 5 times
+                update_pc_next = (count == 3'd0);   // in three clock cycles, update the PC to the decoded value below
                 rd_reg_offset_next = instruction_pointer_reg[11:7];  // destination register being written to, must be triple registered/delayed for three ck cycles
                 
                 // TODO: this is wrong, need to instead shift
