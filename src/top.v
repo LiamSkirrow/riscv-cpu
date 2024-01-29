@@ -25,7 +25,8 @@ module Top(
     // local signals
     wire int_rst_n;
     // instruction fetch
-    reg [31:0] program_counter_reg, instruction_pointer_reg;
+    reg [31:0] program_counter_reg, instruction_pointer_reg, instruction_pointer_reg_1c;
+    wire decode_pulse;
     // register file
     wire reg_rd_wrn;
     reg  [31:0] reg_data_in;
@@ -179,13 +180,18 @@ module Top(
     // IR register sequential process, using a SYNCHRONOUS reset here (TODO: figure out if this is an issue)
     always @(posedge CK_REF) begin
         if(!RST_N) begin 
-            instruction_pointer_reg <= 32'd0;
+            instruction_pointer_reg    <= 32'd0;
+            instruction_pointer_reg_1c <= 32'd0;
         end
         else begin
-            instruction_pointer_reg <= INST_MEM_DATA_BUS;
+            instruction_pointer_reg    <= INST_MEM_DATA_BUS;
+            instruction_pointer_reg_1c <= instruction_pointer_reg;
         end
-    end   
+    end
 
+    // the delayed version of the instruction will be equal to the instantaneous value during PC freezing (jal for example)
+    // this creates a one-cycle pulse needed on update_pc_next
+    assign decode_pulse = (instruction_pointer_reg != instruction_pointer_reg_1c);
 
     //*************************
     // Instruction Decode Stage
@@ -201,7 +207,7 @@ module Top(
         .alu_mem_operation_n_next(alu_mem_operation_n_next), .reg_wb_flag_next(reg_wb_flag_next), .reg_wb_data_type_next(reg_wb_data_type_next), 
         .rs2_data_out_next(rs2_data_out_next), .pipeline_flush_n_next(pipeline_flush_n_next), .alu_out_comb(alu_out_comb), .alu_output(alu_output),
         .rd_reg_offset_1c(rd_reg_offset_1c), .rd_reg_offset_2c(rd_reg_offset_2c), .rd_reg_offset_3c(rd_reg_offset_3c),
-        .alu_out_reg_1c(alu_out_reg_1c), .alu_out_reg_2c(alu_out_reg_2c)
+        .alu_out_reg_1c(alu_out_reg_1c), .alu_out_reg_2c(alu_out_reg_2c), .decode_pulse(decode_pulse)
     );
     
     //********************
