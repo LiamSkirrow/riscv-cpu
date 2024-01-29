@@ -107,7 +107,12 @@ module InstructionDecoder(
 
         case (instruction_pointer_reg[6:0])
             7'b011_0111 : begin   // LUI
-            
+                rd_reg_offset_next = instruction_pointer_reg[11:7];  // destination register being written to, must be triple registered/delayed for three ck cycles
+                alu_input_a_reg = {instruction_pointer_reg[31:12], 12'd0}; // ALU A input, 20 bits, set 12 LSBs to zero
+                alu_input_b_reg = 32'd0;                                   // ALU B input, zero
+                alu_operation_code_reg = `ALU_ADD_OP; // ALU is set to perform an addition operation
+                alu_mem_operation_n_next = 1'b1;      // indicate to the write back stage whether to load from ALU or memory, tripled registered/delayed for three ck cycles
+                reg_wb_flag_next = 1'b1;              // register write back will occur for this instruction, must be triple registered/delayed for three ck cycles
             end
             7'b001_0111 : begin   // AUIPC
             
@@ -168,7 +173,7 @@ module InstructionDecoder(
                 alu_input_b_reg = instruction_pointer_reg[31:20];    // ALU B input is the immediate in the instruction
                 alu_operation_code_reg = `ALU_ADD_OP; // ALU is set to perform an addition operation
                 mem_access_operation_next = `MEM_LOAD; // memory access stage will perform a memory load operation
-                alu_mem_operation_n_next = 1'b0;   // indicate to the write back stage whether to load from ALU or memory, tripled registered/delayed for three ck cycles
+                // alu_mem_operation_n_next = 1'b0;   // indicate to the write back stage whether to load from ALU or memory, tripled registered/delayed for three ck cycles
                 reg_wb_flag_next = 1'b1;           // register write back will occur for this instruction, must be triple registered/delayed for three ck cycles
 
                 case (instruction_pointer_reg[14:12])
@@ -203,8 +208,8 @@ module InstructionDecoder(
                                         instruction_pointer_reg[10:7]};    // ALU B input is the immediate in the instruction
                 alu_operation_code_reg = `ALU_ADD_OP;   // ALU is set to perform an addition operation
                 mem_access_operation_next = `MEM_STORE; // memory access stage will perform a memory store operation
-                alu_mem_operation_n_next = 1'b0;   // indicate to the write back stage whether to load from ALU or memory, tripled registered/delayed for three ck cycles
-                reg_wb_flag_next = 1'b0;           // register write back will occur for this instruction, must be triple registered/delayed for three ck cycles
+                // alu_mem_operation_n_next = 1'b0;   // indicate to the write back stage whether to load from ALU or memory, tripled registered/delayed for three ck cycles
+                // reg_wb_flag_next = 1'b0;           // register write back will occur for this instruction, must be triple registered/delayed for three ck cycles
                 rs2_data_out_next = rs2_data_out;  // register the value stored in rs2, needed for memory write stage 2 ck cycles later
                 
                 case (instruction_pointer_reg[14:12])
