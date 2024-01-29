@@ -2,6 +2,7 @@
 
 /* Build time parameters */
 
+// TODO: currently only supports operand forwarding, must not disable for now
 // if not defined, then cause pipeline stalls (slow but might be easier for synthesis due to shorter combinational pathss)
 `define OPERAND_FORWARDING
 

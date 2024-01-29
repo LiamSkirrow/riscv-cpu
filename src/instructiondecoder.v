@@ -36,8 +36,7 @@ module InstructionDecoder(
     output reg        alu_mem_operation_n_next,
     output reg        reg_wb_flag_next,
     output reg [2:0]  reg_wb_data_type_next,
-    output reg [31:0] rs2_data_out_next,
-    output reg        pipeline_flush_n_next
+    output reg [31:0] rs2_data_out_next
 );
 
     wire rd_register_rs1_in_flight_one_cycle, rd_register_rs2_in_flight_one_cycle;
@@ -70,18 +69,21 @@ module InstructionDecoder(
 
 `ifndef OPERAND_FORWARDING
     // TODO: need to pipeline stall here for a few clock cycles
-    assign alu_input_a_wire = rs1_data_out;  // ALU A input is the output data of rs1
-    assign alu_input_b_wire = rs2_data_out;  // ALU B input is the output data of rs2
+    // to stall the pipeline it could be worth passing out a top level signal specifying how many clocks we want 
+    // to stall for.
+
+    // assign alu_input_a_wire = rs1_data_out;  // ALU A input is the output data of rs1
+    // assign alu_input_b_wire = rs2_data_out;  // ALU B input is the output data of rs2
 `else
     assign alu_input_a_wire = rd_register_rs1_in_flight_one_cycle ? alu_out_comb                                     :
                                                             ((rd_register_rs1_in_flight_two_cycle   ? alu_output     :
                                                              (rd_register_rs1_in_flight_three_cycle ? alu_out_reg_1c :
                                                               rs1_data_out)));  // ALU A input, operand forwarded
-    // TODO: not sure the same logic applies to alu input b... Needs thinking
+
     assign alu_input_b_wire = rd_register_rs2_in_flight_one_cycle ? alu_out_comb                                     :
                                                             ((rd_register_rs2_in_flight_two_cycle   ? alu_output     :
                                                              (rd_register_rs2_in_flight_three_cycle ? alu_out_reg_1c :
-                                                              rs1_data_out)));  // ALU B input, operand forwarded
+                                                              rs2_data_out)));  // ALU B input, operand forwarded
 `endif
 
     // TODO:
@@ -102,7 +104,6 @@ module InstructionDecoder(
         reg_wb_flag_next = 1'b0;
         reg_wb_data_type_next = `REG_WB_WORD;
         rs2_data_out_next = 32'd0;
-        pipeline_flush_n_next = 1'b1;
 
         case (instruction_pointer_reg[6:0])
             7'b011_0111 : begin   // LUI
@@ -112,14 +113,6 @@ module InstructionDecoder(
             
             end
             7'b110_1111 : begin   // JAL
-                // HOWTO;
-                // - freeze PC for 3 clocks cycles to allow for remaining pipelined instructions to complete
-                // - whilst waiting, force control signals to zero to have null effect on subsequent clocks
-                // - decode imm jump address, shift by [amount], ALU output shall form the value to write into 
-                //   the rd register
-                // - also, need some logic to say that we want to write that same ALU output value to the PC in 
-                //   order to perform the actual jump
-
                 // create a single cycle pulse to ensure we don't execute the same instruction 5 times
                 update_pc_next = decode_pulse;   // in three clock cycles, update the PC to the decoded value below
                 rd_reg_offset_next = instruction_pointer_reg[11:7];  // destination register being written to, must be triple registered/delayed for three ck cycles
@@ -133,12 +126,10 @@ module InstructionDecoder(
                 mem_access_operation_next = `MEM_NOP; // memory access stage will do nothing
                 alu_mem_operation_n_next = 1'b1;   // indicate to the write back stage whether to load from ALU or memory, tripled registered/delayed for three ck cycles
                 reg_wb_flag_next = 1'b1;           // register write back will occur for this instruction, must be triple registered/delayed for three ck cycles
-            
             end
             7'b110_0111 : begin   // JALR
             
             end
-            // TODO: the pipeline flush logic here needs checking!!! might not need the pipeline_flush_n_next signal at all..
             7'b110_0011 : begin   // BEQ, BNE, BLT, BGE, BLTU, BGEU
                 // rd_reg_offset_next = `REG_FILE_PC_OFFSET;            // rd_register_offset not needed for this instruction 
                 // rs1_reg_offset = instruction_pointer_reg[19:15];     // register address offset given by rs1 in INST
@@ -179,7 +170,6 @@ module InstructionDecoder(
                 mem_access_operation_next = `MEM_LOAD; // memory access stage will perform a memory load operation
                 alu_mem_operation_n_next = 1'b0;   // indicate to the write back stage whether to load from ALU or memory, tripled registered/delayed for three ck cycles
                 reg_wb_flag_next = 1'b1;           // register write back will occur for this instruction, must be triple registered/delayed for three ck cycles
-                pipeline_flush_n_next = 1'b1;      // no pipeline flush (1 = inactive)
 
                 case (instruction_pointer_reg[14:12])
                     3'b000 : begin   // LB
@@ -216,7 +206,6 @@ module InstructionDecoder(
                 alu_mem_operation_n_next = 1'b0;   // indicate to the write back stage whether to load from ALU or memory, tripled registered/delayed for three ck cycles
                 reg_wb_flag_next = 1'b0;           // register write back will occur for this instruction, must be triple registered/delayed for three ck cycles
                 rs2_data_out_next = rs2_data_out;  // register the value stored in rs2, needed for memory write stage 2 ck cycles later
-                pipeline_flush_n_next = 1'b1;      // no pipeline flush (1 = inactive)
                 
                 case (instruction_pointer_reg[14:12])
                     3'b000 : begin   // SB
@@ -242,7 +231,6 @@ module InstructionDecoder(
                 mem_access_operation_next = `MEM_NOP; // memory access stage will perform a memory load operation
                 alu_mem_operation_n_next = 1'b1;   // indicate to the write back stage whether to load from ALU or memory, tripled registered/delayed for three ck cycles
                 reg_wb_flag_next = 1'b1;           // register write back will occur for this instruction, must be triple registered/delayed for three ck cycles                    
-                pipeline_flush_n_next = 1'b1;      // no pipeline flush (1 = inactive)
 
                 case (instruction_pointer_reg[14:12])
                     3'b000 : begin   // ADDI
@@ -290,7 +278,6 @@ module InstructionDecoder(
                 mem_access_operation_next = `MEM_NOP; // memory access stage will perform a memory load operation
                 alu_mem_operation_n_next = 1'b1;   // indicate to the write back stage whether to load from ALU or memory, tripled registered/delayed for three ck cycles
                 reg_wb_flag_next = 1'b1;           // register write back will occur for this instruction, must be triple registered/delayed for three ck cycles              
-                pipeline_flush_n_next = 1'b1;      // no pipeline flush (1 = inactive)
 
                 case (instruction_pointer_reg[14:12])
                     3'b000 : begin   // ADD, SUB
@@ -355,7 +342,6 @@ module InstructionDecoder(
                 alu_mem_operation_n_next = 1'b0;
                 reg_wb_flag_next = 1'b0;
                 reg_wb_data_type_next = `REG_WB_WORD;
-                pipeline_flush_n_next = 1'b1;
             end
 
             default : begin   // UNRECOGNISED OPCODE STATE

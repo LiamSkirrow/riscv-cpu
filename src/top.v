@@ -76,7 +76,6 @@ module Top(
     wire        reg_wb_flag_next;
     wire [2:0]  reg_wb_data_type_next;
     wire [31:0] rs2_data_out_next;
-    wire        pipeline_flush_n_next;
 
     assign alu_input_a = alu_input_a_reg;
     assign alu_input_b = alu_input_b_reg;
@@ -205,7 +204,7 @@ module Top(
         .rs1_reg_offset(rs1_reg_offset), .rs2_reg_offset(rs2_reg_offset), .alu_input_a_reg(alu_input_a_reg),
         .alu_input_b_reg(alu_input_b_reg), .alu_operation_code_reg(alu_operation_code_reg), .mem_access_operation_next(mem_access_operation_next),
         .alu_mem_operation_n_next(alu_mem_operation_n_next), .reg_wb_flag_next(reg_wb_flag_next), .reg_wb_data_type_next(reg_wb_data_type_next), 
-        .rs2_data_out_next(rs2_data_out_next), .pipeline_flush_n_next(pipeline_flush_n_next), .alu_out_comb(alu_out_comb), .alu_output(alu_output),
+        .rs2_data_out_next(rs2_data_out_next), .alu_out_comb(alu_out_comb), .alu_output(alu_output),
         .rd_reg_offset_1c(rd_reg_offset_1c), .rd_reg_offset_2c(rd_reg_offset_2c), .rd_reg_offset_3c(rd_reg_offset_3c),
         .alu_out_reg_1c(alu_out_reg_1c), .alu_out_reg_2c(alu_out_reg_2c), .decode_pulse(decode_pulse)
     );
