@@ -12,3 +12,8 @@ The intention is to compile and simulate the Verilog using Verilator.
 - CocoTB investigation to make the testbenches a little better? This is an enhancement and not strictly required but might be good to look into.
 - include draw.io diagram in the README, showing the structure of the CPU
 - include a link to a writeup of the design decisions and architecture of the CPU
+
+## Dev Plan
+- Complete enough of the ISA and test with some programs, run the CPU through and make sure the pipeline is at least minimally functional. This step should be done using register files as both imem and dmem
+- Now start integrating proper RAM blocks (block rams on FPGA???) and allow the RAM's ready signal to stall the CPU pipeline by an arbitrary number of clk cycles
+- Implement a cache controller that does all the DMA on behalf of the CPU, and thus reduces the overall number of stalled clock cycles dramatically. 
