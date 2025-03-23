@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`include "riscv-cpu/src/defines.v"
+`include "riscv-cpu/rtl/defines.v"
 
 // main instruction decoder, read in opcode and set control signals accordingly
 

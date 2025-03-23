@@ -14,7 +14,7 @@ module alu(
     input wire rst_n,
     input wire halt,     // CPU halt, freeze registers
     input wire alu_en,   // active high ALU enable TODO: remove this signal
-    input wire [3:0] op_val,   // encoded operation bus, indicates which operand_a/L operation to perform
+    input wire [3:0] op_val,   // encoded operation bus, indicates which math operation to perform
 //     input wire SIGNED_UNSIGNED_N,   // signed or unsigned operation
     input wire [31:0] operand_a,   // ALU input 32 bit value
     input wire [31:0] operand_b,   // ALU input 32 bit value
