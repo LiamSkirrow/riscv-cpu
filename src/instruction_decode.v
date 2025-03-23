@@ -11,9 +11,9 @@
 //       this will be useful for simulation, but what do we expect to happen on the CPU? Need to handle this case
 //       maybe create an exception mechanism? May need an interrupt controller to be present...
 
-module InstructionDecoder(
-    input             CK_REF,
-    input             RST_N,
+module instruction_decode(
+    input             clk,
+    input             rst_n,
     input             decode_pulse,
     input      [31:0] instruction_pointer_reg,
     input      [31:0] rs1_data_out,

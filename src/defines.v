@@ -3,7 +3,7 @@
 /* Build time parameters */
 
 // TODO: currently only supports operand forwarding, must not disable for now
-// if not defined, then cause pipeline stalls (slow but might be easier for synthesis due to shorter combinational pathss)
+// if not defined, then cause pipeline stalls (slow but might be easier for synthesis due to shorter combinational paths)
 `define OPERAND_FORWARDING
 
 // enable  dynamic branch prediction and branch target prediction... comment out for default static branch 

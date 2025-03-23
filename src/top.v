@@ -9,10 +9,10 @@
 //   to exist here so that the decode phase of the pipeline has a single-cycle execution rather than being purely combinatorial
 // ***
 
-module Top(
-    input wire CK_REF,
-    input wire RST_N,
-    input wire HALT,     // halt the CPU pipeline
+module top(
+    input wire clk,
+    input wire rst_n,
+    input wire halt,     // halt the CPU pipeline
     input wire [31:0] INST_MEM_DATA_BUS,    // current instruction
     input wire [31:0] MEM_ACCESS_DATA_IN_BUS,    // RAM register block data input bus
 
@@ -81,7 +81,7 @@ module Top(
     assign alu_input_b = alu_input_b_reg;
     assign alu_operation_code = alu_operation_code_reg;
     assign alu_en = alu_en_reg;
-    assign int_rst_n = RST_N;
+    assign int_rst_n = rst_n;
     
     // if we get any kind of jump instruction, then we need to freeze the value of the PC.
     // Read the instruction straight from DMEM, we have to do this before we even latch the instruction
@@ -89,22 +89,22 @@ module Top(
     assign freeze_pc = (INST_MEM_DATA_BUS[6:0] == 7'b110_1111);
 
     // instantiate sub-modules
-    RegisterFile inst_reg_file (
-        .CK_REF(CK_REF), .RST_N(RST_N), .REG_RD_WRN(reg_rd_wrn), .RS1_REG_OFFSET(rs1_reg_offset), 
-        .RS2_REG_OFFSET(rs2_reg_offset), .RD_REG_OFFSET(rd_reg_offset), .REG_DATA_IN(reg_data_in), 
-        .RS1_DATA_OUT(rs1_data_out), .RS2_DATA_OUT(rs2_data_out), .PC_DATA_OUT(pc_data_out), .UPDATE_PC(update_pc_3c),
-        .FREEZE_PC(freeze_pc), .HALT(HALT)
+    reg_file u_reg_file (
+        .clk(clk), .rst_n(rst_n), .reg_rd_wrn(reg_rd_wrn), .rs1_reg_offset(rs1_reg_offset), 
+        .rs2_reg_offset(rs2_reg_offset), .rd_reg_offset(rd_reg_offset), .reg_data_in(reg_data_in), 
+        .rs1_data_out(rs1_data_out), .rs2_data_out(rs2_data_out), .pc_data_out(pc_data_out), .update_pc(update_pc_3c),
+        .freeze_pc(freeze_pc), .halt(halt)
     );
 
-    ALU inst_alu (
-        .CK_REF(CK_REF), .RST_N(RST_N), .ALU_EN(alu_en), .OP_VAL(alu_operation_code),
-        .A(alu_input_a), .B(alu_input_b), .OUT(alu_output), .CARRY_FLAG(alu_carry_flag),
-        .ZERO_FLAG(alu_zero_flag), .OVERFLOW_FLAG(alu_overflow_flag), .ALU_DONE(alu_done), .HALT(HALT), .OUT_comb(alu_out_comb)
+    alu u_alu (
+        .clk(clk), .rst_n(rst_n), .alu_en(alu_en), .op_val(alu_operation_code),
+        .operand_a(alu_input_a), .operand_b(alu_input_b), .out(alu_output), .carry_flag(alu_carry_flag),
+        .zero_flag(alu_zero_flag), .overflow_flag(alu_overflow_flag), .alu_done(alu_done), .halt(halt), .out_comb(alu_out_comb)
     );
     
     // Sequential Processes
 
-    always @(posedge CK_REF, negedge int_rst_n) begin
+    always @(posedge clk, negedge int_rst_n) begin
         if(!int_rst_n) begin
             rd_reg_offset_3c <= 5'b00000;
             rd_reg_offset_2c <= 5'b00000;
@@ -136,8 +136,8 @@ module Top(
             update_pc_1c <= 1'b0;
         end
         else begin
-            // only update the registers if HALT is not active
-            if(!HALT) begin
+            // only update the registers if halt is not active
+            if(!halt) begin
                 rd_reg_offset_3c <= rd_reg_offset_2c;
                 rd_reg_offset_2c <= rd_reg_offset_1c;
                 rd_reg_offset_1c <= rd_reg_offset_next;
@@ -177,8 +177,8 @@ module Top(
     //************************
 
     // IR register sequential process, using a SYNCHRONOUS reset here (TODO: figure out if this is an issue)
-    always @(posedge CK_REF) begin
-        if(!RST_N) begin 
+    always @(posedge clk) begin
+        if(!rst_n) begin 
             instruction_pointer_reg    <= 32'd0;
             instruction_pointer_reg_1c <= 32'd0;
         end
@@ -197,8 +197,8 @@ module Top(
     //*************************
     
     // given the current instruction, decode the relevant fields and pass out the control signals to the top level
-    InstructionDecoder inst_instruction_decoder(
-        .CK_REF(CK_REF), .RST_N(RST_N),
+    instruction_decode u_inst_decode(
+        .clk(clk), .rst_n(rst_n),
         .instruction_pointer_reg(instruction_pointer_reg), .rs1_data_out(rs1_data_out), .rs2_data_out(rs2_data_out),
         .update_pc_next(update_pc_next), .rd_reg_offset_next(rd_reg_offset_next),
         .rs1_reg_offset(rs1_reg_offset), .rs2_reg_offset(rs2_reg_offset), .alu_input_a_reg(alu_input_a_reg),
@@ -232,7 +232,7 @@ module Top(
     end
 
     always @(*) begin
-        // only proceed if the ALU_DONE flag is high (up to the correct stage in the pipeline)
+        // only proceed if the alu_done flag is high (up to the correct stage in the pipeline)
         if(alu_done) begin
             case (mem_access_operation_2c) 
                 2'b00 : begin   // MEM LOAD

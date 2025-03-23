@@ -19,25 +19,25 @@ int main(int argc, char** argv, char** env) {
 
     while (sim_time < MAX_SIM_TIME) {
 
-        if(sim_time == 0 && dut->CK_REF == 0)
-            dut->RST_N = 0;
+        if(sim_time == 0 && dut->clk == 0)
+            dut->rst_n = 0;
         else{
-            dut->RST_N = 1;
-            dut->OP_VAL = 1;
-            dut->A = 5;
-            dut->B = 7;
-            dut->ALU_EN = 1;
+            dut->rst_n = 1;
+            dut->op_val = 1;
+            dut->operand_a = 5;
+            dut->operand_b = 7;
+            dut->alu_en = 1;
         }
         
-        if(sim_time == 2 && dut->CK_REF == 0){
+        if(sim_time == 2 && dut->clk == 0){
             // addition of 5 and 7
-            dut->OP_VAL = 1;
-            dut->A = 5;
-            dut->B = 7;
-            dut->ALU_EN = 1;
+            dut->op_val = 1;
+            dut->operand_a = 5;
+            dut->operand_b = 7;
+            dut->alu_en = 1;
         }
 
-        dut->CK_REF ^= 1;
+        dut->clk ^= 1;
         dut->eval();
         m_trace->dump(sim_time);
         sim_time++;
