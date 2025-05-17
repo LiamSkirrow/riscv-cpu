@@ -3,126 +3,100 @@
 // ALU:
 // decode the input operation bus
 // register the inputs operand_a and operand_b
-// perform the arithmetic or logic operation on the registered input operands operand_a_reg and operand_b_reg
-// register the output of the arithmetic/logical operation into out_reg
+// perform the arithmetic or logic operation on the registered input operands operand_a and operand_b
+// register the output of the arithmetic/logical operation into alu_result_out
 
 // NOTE:
 // - not yet using the `defines for the encoded op_val signal
 
 module alu(
-    input wire clk,
-    input wire rst_n,
-    input wire halt,     // CPU halt, freeze registers
-    input wire alu_en,   // active high ALU enable TODO: remove this signal
-    input wire [3:0] op_val,   // encoded operation bus, indicates which math operation to perform
-//     input wire SIGNED_UNSIGNED_N,   // signed or unsigned operation
-    input wire [31:0] operand_a,   // ALU input 32 bit value
-    input wire [31:0] operand_b,   // ALU input 32 bit value
-    
-    output wire [31:0] out,      // ALU output 32 bit value
-    output wire [31:0] out_comb, // UNREGISTERED combinational output, needed for operand forwarding for consecutive instructions
-    output wire carry_flag,
-    output wire zero_flag,
-    output wire overflow_flag,
-    output wire alu_done   // ALU operation complete
+    input             clk,
+    input             rst_n,
+    input             halt,                // CPU halt, freeze registers
+    input             signed_unsigned_n,   // TODO: flag to indicate whether this is a signed/unsigned operation
+    input      [3:0]  op_val,              // encoded operation bus, indicates which math operation to perform
+    input      [31:0] operand_a,           // ALU input 32 bit value
+    input      [31:0] operand_b,           // ALU input 32 bit value
+    output reg [31:0] alu_result_out,      // ALU output 33 bits to allow for carry bit as MSB
+    output     [31:0] alu_result_out_comb, // UNREGISTERED combinational output, needed for operand forwarding for consecutive instructions
+    output reg        carry_flag,
+    output reg        zero_flag,
+    output reg        overflow_flag // TODO: what's the diff between carry and overflow???
     );
     
     // local signals
-    reg alu_done_ff;
-    // reg alu_done_ff_ff;
-    reg alu_done_next;   // ALU register to enable the next pipeline stage
-    reg [31:0] operand_a_reg, operand_b_reg;
-    reg [32:0] out_reg, out_next;   // 33 bits to allow for carry bit as MSB
-    reg [3:0] op_val_reg;
+    reg [32:0] alu_result; // 33 bits to allow for carry bit as MSB
+    reg carry_flag;
+    reg zero_flag;
+    reg overflow_flag;
 
     // sequential process
     always @(posedge clk, negedge rst_n) begin
         if(!rst_n) begin
-            operand_a_reg <= 32'h0000_0000;
-            operand_b_reg <= 32'h0000_0000;
-            out_reg <= 32'h0000_0000;
-            alu_done_ff <= 1'b0;
-            // alu_done_ff_ff <= 1'b0;
-            op_val_reg <= 4'b0000;
+            alu_result_out <= 32'h0000_0000;
+            carry_flag     <= 1'b0;
+            zero_flag      <= 1'b0;
         end
         else begin
             if(!halt) begin
-                operand_a_reg <= operand_a;
-                operand_b_reg <= operand_b;
-                out_reg <= out_next;
-                op_val_reg <= op_val;
-                // 'alu_done_ff' is double-registered to add an extra clock cycle delay, therefore aligning with 'out_reg'
-                // alu_done_ff <= alu_done_ff_ff;
-                // alu_done_ff_ff <= alu_done_next;
-                alu_done_ff <= alu_done_next;
+                alu_result_out <= alu_result[31:0];
+                // flag register bits
+                carry_flag <= alu_result[32];
+                zero_flag  <= (alu_result[31:0] == 32'h0000_0000);
+                // overflow_flag <= ???
+
             end
         end
     end
+            
+    //TODO: need to do declare nets as signed
     
     // decode op_val and perform the arithmetic or logical operation
     always @(*) begin
-        case (op_val_reg)
+        case (op_val)
 
             // *** arithmetic operations ***
             4'b0001 : begin   // addition operation
-                out_next = (operand_a_reg + operand_b_reg);
-                alu_done_next = 1'b1;
+                alu_result = (operand_a + operand_b);
             end
-            //TODO: need to do declare nets as signed
             4'b0010 : begin   // subtraction operation
-                out_next = (operand_a_reg - operand_b_reg);
-                alu_done_next = 1'b1;
+                alu_result = (operand_a - operand_b);
             end
             4'b0011 : begin   // set if less than
-                out_next = ($signed(operand_a_reg) < $signed(operand_b_reg)) ? 32'd1 : 32'd0;
-                alu_done_next = 1'b1;
+                alu_result = ($signed(operand_a) < $signed(operand_b)) ? 32'd1 : 32'd0;
             end
             4'b1011 : begin   // set if less than unsigned
-                out_next = (operand_a_reg < operand_b_reg) ? 32'd1 : 32'd0;
-                alu_done_next = 1'b1;
+                alu_result = (operand_a < operand_b) ? 32'd1 : 32'd0;
             end
 
             // *** logical operations ***
 
             4'b0100 : begin   // bitwise AND
-                out_next = (operand_a_reg & operand_b_reg);
-                alu_done_next = 1'b1;
+                alu_result = (operand_a & operand_b);
             end
             4'b0101 : begin   // bitwise OR
-                out_next = (operand_a_reg | operand_b_reg);
-                alu_done_next = 1'b1;
+                alu_result = (operand_a | operand_b);
             end
             4'b0110 : begin   // bitwise XOR
-                out_next = (operand_a_reg ^ operand_b_reg);
-                alu_done_next = 1'b1;
+                alu_result = (operand_a ^ operand_b);
             end
             4'b0111 : begin   // shift left logical
-                out_next = (operand_a_reg << operand_b_reg);
-                alu_done_next = 1'b1;
+                alu_result = (operand_a << operand_b);
             end
             4'b1000 : begin   // shift right logical
-                out_next = (operand_a_reg >> operand_b_reg);
-                alu_done_next = 1'b1;
+                alu_result = (operand_a >> operand_b);
             end
             4'b1001 : begin   // shift right arithmetic
-                out_next = (operand_a_reg >>> operand_b_reg);
-                alu_done_next = 1'b1;
+                alu_result = (operand_a >>> operand_b);
             end
             
             default : begin   // invalid op_val, pipeline may be being filled (starting from reset) -> do nothing
-                out_next = 33'h00000_0000;
-                alu_done_next = 1'b0;
+                alu_result = 33'h00000_0000;
             end
         endcase
     end 
-    
-    //top-level assigns
-    assign out        = out_reg[31:0];
-    assign out_comb   = out_next[31:0];
-    assign carry_flag = out_reg[32];
-    assign zero_flag  = (out_reg[31:0] == 32'h0000_0000) ? 1'b1 : 1'b0;
-    //assign overflow_flag = ???;
-    
-    assign alu_done = alu_done_ff;
+
+    // instantaneous output used for operand forwarding
+    assign alu_result_out_comb = alu_result[31:0];
     
 endmodule

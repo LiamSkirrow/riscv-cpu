@@ -109,17 +109,16 @@ module top(
     alu u_alu (
         .clk(clk), 
         .rst_n(rst_n), 
-        .alu_en(alu_en), 
+        .halt(halt),  // TODO: needs connecting
+        .signed_unsigned_n(signed_unsigned_n), // TODO: needs connecting
         .op_val(alu_operation_code),
         .operand_a(alu_input_a), 
         .operand_b(alu_input_b), 
-        .out(alu_output), 
+        .alu_result_out(alu_output), //TODO: 33 bits
+        .alu_result_out_comb(alu_out_comb)
         .carry_flag(alu_carry_flag),
         .zero_flag(alu_zero_flag), 
-        .overflow_flag(alu_overflow_flag), 
-        .alu_done(alu_done),
-        .halt(halt), 
-        .out_comb(alu_out_comb)
+        .overflow_flag(alu_overflow_flag)
     );
     
     // Sequential Processes
