@@ -91,16 +91,35 @@ module top(
 
     // instantiate sub-modules
     reg_file u_reg_file (
-        .clk(clk), .rst_n(rst_n), .reg_rd_wrn(reg_rd_wrn), .rs1_reg_offset(rs1_reg_offset), 
-        .rs2_reg_offset(rs2_reg_offset), .rd_reg_offset(rd_reg_offset), .reg_data_in(reg_data_in), 
-        .rs1_data_out(rs1_data_out), .rs2_data_out(rs2_data_out), .pc_data_out(pc_data_out), .update_pc(update_pc_3c),
-        .freeze_pc(freeze_pc), .halt(halt)
+        .clk(clk), 
+        .rst_n(rst_n), 
+        .reg_rd_wrn(reg_rd_wrn), 
+        .rs1_reg_offset(rs1_reg_offset), 
+        .rs2_reg_offset(rs2_reg_offset), 
+        .rd_reg_offset(rd_reg_offset), 
+        .reg_data_in(reg_data_in), 
+        .rs1_data_out(rs1_data_out), 
+        .rs2_data_out(rs2_data_out), 
+        .pc_data_out(pc_data_out), 
+        .update_pc(update_pc_3c),
+        .freeze_pc(freeze_pc), 
+        .halt(halt)
     );
 
     alu u_alu (
-        .clk(clk), .rst_n(rst_n), .alu_en(alu_en), .op_val(alu_operation_code),
-        .operand_a(alu_input_a), .operand_b(alu_input_b), .out(alu_output), .carry_flag(alu_carry_flag),
-        .zero_flag(alu_zero_flag), .overflow_flag(alu_overflow_flag), .alu_done(alu_done), .halt(halt), .out_comb(alu_out_comb)
+        .clk(clk), 
+        .rst_n(rst_n), 
+        .alu_en(alu_en), 
+        .op_val(alu_operation_code),
+        .operand_a(alu_input_a), 
+        .operand_b(alu_input_b), 
+        .out(alu_output), 
+        .carry_flag(alu_carry_flag),
+        .zero_flag(alu_zero_flag), 
+        .overflow_flag(alu_overflow_flag), 
+        .alu_done(alu_done),
+        .halt(halt), 
+        .out_comb(alu_out_comb)
     );
     
     // Sequential Processes
@@ -199,15 +218,31 @@ module top(
     
     // given the current instruction, decode the relevant fields and pass out the control signals to the top level
     instruction_decode u_inst_decode(
-        .clk(clk), .rst_n(rst_n),
-        .instruction_pointer_reg(instruction_pointer_reg), .rs1_data_out(rs1_data_out), .rs2_data_out(rs2_data_out),
-        .update_pc_next(update_pc_next), .rd_reg_offset_next(rd_reg_offset_next),
-        .rs1_reg_offset(rs1_reg_offset), .rs2_reg_offset(rs2_reg_offset), .alu_input_a_reg(alu_input_a_reg),
-        .alu_input_b_reg(alu_input_b_reg), .alu_operation_code_reg(alu_operation_code_reg), .mem_access_operation_next(mem_access_operation_next),
-        .alu_mem_operation_n_next(alu_mem_operation_n_next), .reg_wb_flag_next(reg_wb_flag_next), .reg_wb_data_type_next(reg_wb_data_type_next), 
-        .rs2_data_out_next(rs2_data_out_next), .alu_out_comb(alu_out_comb), .alu_output(alu_output),
-        .rd_reg_offset_1c(rd_reg_offset_1c), .rd_reg_offset_2c(rd_reg_offset_2c), .rd_reg_offset_3c(rd_reg_offset_3c),
-        .alu_out_reg_1c(alu_out_reg_1c), .alu_out_reg_2c(alu_out_reg_2c), .decode_pulse(decode_pulse)
+        .clk(clk), 
+        .rst_n(rst_n),
+        .instruction_pointer_reg(instruction_pointer_reg), 
+        .rs1_data_out(rs1_data_out), 
+        .rs2_data_out(rs2_data_out),
+        .update_pc_next(update_pc_next), 
+        .rd_reg_offset_next(rd_reg_offset_next),
+        .rs1_reg_offset(rs1_reg_offset), 
+        .rs2_reg_offset(rs2_reg_offset), 
+        .alu_input_a_reg(alu_input_a_reg),
+        .alu_input_b_reg(alu_input_b_reg), 
+        .alu_operation_code_reg(alu_operation_code_reg), 
+        .mem_access_operation_next(mem_access_operation_next),
+        .alu_mem_operation_n_next(alu_mem_operation_n_next), 
+        .reg_wb_flag_next(reg_wb_flag_next), 
+        .reg_wb_data_type_next(reg_wb_data_type_next), 
+        .rs2_data_out_next(rs2_data_out_next), 
+        .alu_out_comb(alu_out_comb), 
+        .alu_output(alu_output),
+        .rd_reg_offset_1c(rd_reg_offset_1c), 
+        .rd_reg_offset_2c(rd_reg_offset_2c), 
+        .rd_reg_offset_3c(rd_reg_offset_3c),
+        .alu_out_reg_1c(alu_out_reg_1c), 
+        .alu_out_reg_2c(alu_out_reg_2c), 
+        .decode_pulse(decode_pulse)
     );
     
     //********************
