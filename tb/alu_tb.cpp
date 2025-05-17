@@ -26,7 +26,6 @@ int main(int argc, char** argv, char** env) {
             dut->op_val = 1;
             dut->operand_a = 5;
             dut->operand_b = 7;
-            dut->alu_en = 1;
         }
         
         if(sim_time == 2 && dut->clk == 0){
@@ -34,7 +33,6 @@ int main(int argc, char** argv, char** env) {
             dut->op_val = 1;
             dut->operand_a = 5;
             dut->operand_b = 7;
-            dut->alu_en = 1;
         }
 
         dut->clk ^= 1;

@@ -26,9 +26,6 @@ module alu(
     
     // local signals
     reg [32:0] alu_result; // 33 bits to allow for carry bit as MSB
-    reg carry_flag;
-    reg zero_flag;
-    reg overflow_flag;
 
     // sequential process
     always @(posedge clk, negedge rst_n) begin

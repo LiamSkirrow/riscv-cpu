@@ -3,14 +3,6 @@
 
 // main instruction decoder, read in opcode and set control signals accordingly
 
-// NOTE: Thoughts
-//       - define all the *_next signals in this module and pass them out to the top level
-//         which is where they shall get latched/registered
-
-// TODO: each opcode sub-case has its own default statement we should flag an invalid opcode by using an assert()
-//       this will be useful for simulation, but what do we expect to happen on the CPU? Need to handle this case
-//       maybe create an exception mechanism? May need an interrupt controller to be present...
-
 module instruction_decode(
     input             clk,
     input             rst_n,
@@ -39,10 +31,14 @@ module instruction_decode(
     output reg [31:0] rs2_data_out_next
 );
 
-    wire rd_register_rs1_in_flight_one_cycle, rd_register_rs2_in_flight_one_cycle;
-    wire rd_register_rs1_in_flight_two_cycle, rd_register_rs2_in_flight_two_cycle;
-    wire rd_register_rs1_in_flight_three_cycle, rd_register_rs2_in_flight_three_cycle;
-    wire [31:0] alu_input_a_wire, alu_input_b_wire;
+    wire rd_register_rs1_in_flight_one_cycle;
+    wire rd_register_rs2_in_flight_one_cycle;
+    wire rd_register_rs1_in_flight_two_cycle;
+    wire rd_register_rs2_in_flight_two_cycle;
+    wire rd_register_rs1_in_flight_three_cycle;
+    wire rd_register_rs2_in_flight_three_cycle;
+    wire [31:0] alu_input_a_wire;
+    wire [31:0] alu_input_b_wire;
 
     // TODO: might be nice to parameterise operand forwarding, doesn't look particularly difficult
 
