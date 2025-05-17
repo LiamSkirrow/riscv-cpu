@@ -27,7 +27,6 @@ module alu(
     // local signals
     reg [32:0] alu_result; // 33 bits to allow for carry bit as MSB
 
-    // sequential process
     always @(posedge clk, negedge rst_n) begin
         if(!rst_n) begin
             alu_result_out <= 32'h0000_0000;

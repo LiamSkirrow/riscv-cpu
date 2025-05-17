@@ -37,20 +37,21 @@ int main(int argc, char** argv, char** env) {
     while (sim_time < MAX_SIM_TIME) {
         
         // release dut out of reset
-        if(sim_time == 0 && dut->CK_REF == 0){
-            dut->RST_N = 0;
+        if(sim_time == 0 && dut->clk == 0){
+            dut->rst_n = 0;
         } else{
-            dut->RST_N = 1;
+            dut->rst_n = 1;
         }
         
-        dut->CK_REF ^= 1;
+        dut->clk ^= 1;
         dut->eval();
 
         // fetch the instruction pointed to by PC
-        if(sim_time > 0 && dut->CK_REF == 0){
+        if(sim_time > 0 && dut->clk == 0){
             printf("Executing instruction at mem location: %8x\n", dut->INST_MEM_ADDRESS_BUS);
             dut->INST_MEM_DATA_BUS = code_mem[dut->INST_MEM_ADDRESS_BUS];
-
+            
+            // TODO: this is buggy since it will always write/read every clock cycle, need a mem access valid
             // handle the CPU's RAM request (read or write)
             if(dut->MEM_ACCESS_READ_WRN == 1){
                 dut->MEM_ACCESS_DATA_IN_BUS = data_mem[dut->MEM_ACCESS_ADDRESS_BUS];

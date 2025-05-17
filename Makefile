@@ -14,14 +14,14 @@ top:
 ifeq ($(SYNTAX), 1)
 	@echo ">>> Syntax checking module: Top"
 	@echo
-	$(CC) -Wno-fatal --cc $(SRC)top.v $(SRC)alu.v $(SRC)reg_file.v --lint-only $(ARGS)
+	$(CC) -Wno-fatal --cc $(SRC)top.v $(SRC)instruction_decode.v $(SRC)alu.v $(SRC)reg_file.v $(SRC)defines.v --lint-only $(ARGS)
 else
 ifeq ($(WAVES), 1)
 	gtkwave top_waves.fst -a $(CONF)top.gtkw
 else
 	@echo ">>> Verilating Top..."
 	@echo
-	$(CC) -Wno-fatal --trace-fst --cc $(SRC)top.v $(SRC)alu.v $(SRC)reg_file.v --exe $(TB)$@_tb.cpp $(ARGS)
+	$(CC) -Wno-fatal --trace-fst --cc $(SRC)top.v $(SRC)instruction_decode.v $(SRC)alu.v $(SRC)reg_file.v $(SRC)defines.v --exe $(TB)$@_tb.cpp $(ARGS)
 	make -C obj_dir -f Vtop.mk Vtop
 	@echo ">>> Simulating Top..."
 	@echo
