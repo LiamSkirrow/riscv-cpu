@@ -1,45 +1,29 @@
 [*]
-[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
-[*] Sat Jan  6 19:57:14 2024
+[*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
+[*] Sat May 17 20:12:20 2025
 [*]
-[dumpfile] "/home/liam.skirrow/Documents/code/riscv-cpu/alu_waves.fst"
-[dumpfile_mtime] "Sat Jan  6 19:55:57 2024"
-[dumpfile_size] 885
-[savefile] "/home/liam.skirrow/Documents/code/riscv-cpu/config-files/alu.gtkw"
+[dumpfile] "/mnt/c/Users/Liam/OneDrive/Documents/Code/riscv-cpu/alu_waves.fst"
+[dumpfile_mtime] "Sat May 17 20:11:01 2025"
+[dumpfile_size] 812
+[savefile] "/mnt/c/Users/Liam/OneDrive/Documents/Code/riscv-cpu/config-files/alu.gtkw"
 [timestart] 0
-[size] 1848 1006
-[pos] -1 -1
-*-1.569180 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[size] 1536 793
+[pos] -9 -9
+*-1.000000 1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [sst_width] 279
 [signals_width] 195
 [sst_expanded] 1
-[sst_vpaned_height] 300
+[sst_vpaned_height] 278
 @28
-TOP.alu.CK_REF
-TOP.alu.RST_N
-TOP.alu.ALU_EN
+TOP.alu.clk
+TOP.alu.rst_n
 @22
-TOP.alu.A[31:0]
-TOP.alu.B[31:0]
-TOP.alu.A_reg[31:0]
-TOP.alu.B_reg[31:0]
-@28
-TOP.alu.ALU_DONE
-TOP.alu.CARRY_FLAG
-@22
-TOP.alu.OP_VAL[3:0]
-TOP.alu.OP_VAL_reg[3:0]
-TOP.alu.OUT_next[32:0]
-TOP.alu.OUT[31:0]
-TOP.alu.OUT_reg[32:0]
-@28
-TOP.alu.OVERFLOW_FLAG
-TOP.alu.ZERO_FLAG
-@29
-TOP.alu.alu_done_next
-@28
-TOP.alu.alu_done_ff
-TOP.alu.alu_done_ff_ff
+TOP.alu.alu_result_out[31:0]
+TOP.alu.alu_result_out_comb[31:0]
+TOP.alu.op_val[3:0]
+TOP.alu.operand_a[31:0]
+@23
+TOP.alu.operand_b[31:0]
 [pattern_trace] 1
 [pattern_trace] 0
