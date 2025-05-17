@@ -22,6 +22,8 @@ module reg_file(
     output wire [31:0] rs2_data_out,
     output wire [31:0] pc_data_out
     );
+
+    // FIXME: I want to rewrite this entire module... it's a bit crusty XD
     
     // local signals
     // TODO: whats the deal with 33 registers? The 33rd can't be reached since rd_reg_offset is only 5 bits

@@ -13,18 +13,16 @@
 module top(
     input wire clk,
     input wire rst_n,
-    input wire halt,     // halt the CPU pipeline
-    input wire [31:0] INST_MEM_DATA_BUS,    // current instruction
+    input wire halt,                             // halt the CPU pipeline
+    input wire [31:0] INST_MEM_DATA_BUS,         // current instruction
     input wire [31:0] MEM_ACCESS_DATA_IN_BUS,    // RAM register block data input bus
 
-    output wire [31:0] INST_MEM_ADDRESS_BUS,   // address bus driving the code memory, direct output of PC
-    output wire MEM_ACCESS_READ_WRN,    // control signal to RAM register block indicating whether a read or write
-    output wire [15:0] MEM_ACCESS_ADDRESS_BUS,    // RAM register block address bus
-    output wire [31:0] MEM_ACCESS_DATA_OUT_BUS    // RAM register block data output bus
+    output wire [31:0] INST_MEM_ADDRESS_BUS,     // address bus driving the code memory, direct output of PC
+    output wire MEM_ACCESS_READ_WRN,             // control signal to RAM register block indicating whether a read or write
+    output wire [15:0] MEM_ACCESS_ADDRESS_BUS,   // RAM register block address bus
+    output wire [31:0] MEM_ACCESS_DATA_OUT_BUS   // RAM register block data output bus
     );
         
-    // local signals
-    wire int_rst_n;
     // instruction fetch
     reg [31:0] program_counter_reg, instruction_pointer_reg, instruction_pointer_reg_1c;
     wire decode_pulse;
@@ -36,20 +34,17 @@ module top(
     wire freeze_pc;
     reg update_pc_3c, update_pc_2c, update_pc_1c;
     // alu
-    reg  [31:0] alu_input_a_reg, alu_input_b_reg;
-    wire [31:0] alu_input_a, alu_input_b;
+    reg  [31:0] alu_input_a, alu_input_b;
     wire [31:0] alu_output;
-    reg  [3:0]  alu_operation_code_reg;
     wire [3:0]  alu_operation_code;
     wire [31:0] alu_out_comb;
-    reg alu_en_reg;
     wire alu_en;
     wire alu_carry_flag;
     wire alu_zero_flag;
     wire alu_overflow_flag;
     wire alu_done;
     // memory access
-    reg [1:0] mem_access_operation_2c, mem_access_operation_1c, mem_access_operation_next;
+    reg [1:0] mem_access_operation_2c, mem_access_operation_1c;
     reg mem_access_read_wrn;
     reg [15:0] mem_access_address_bus;
     reg [31:0] mem_access_data_out_bus;
@@ -58,31 +53,24 @@ module top(
     reg [31:0] mem_access_data_out_bus_adjusted;
     // register write back and operand forwarding
     reg [4:0] rd_reg_offset_3c, rd_reg_offset_2c, rd_reg_offset_1c;
-    reg reg_wb_flag_3c, reg_wb_flag_2c, reg_wb_flag_1c, reg_wb_flag_next;
-    reg alu_mem_operation_n_3c, alu_mem_operation_n_2c, alu_mem_operation_n_1c, alu_mem_operation_n_next;
+    reg reg_wb_flag_3c, reg_wb_flag_2c, reg_wb_flag_1c;
+    reg alu_mem_operation_n_3c, alu_mem_operation_n_2c, alu_mem_operation_n_1c;
     reg [31:0] alu_out_reg_2c, alu_out_reg_1c, alu_out_reg_next;
-    reg [2:0] reg_wb_data_type_next, reg_wb_data_type_3c, reg_wb_data_type_2c, reg_wb_data_type_1c;
+    reg [2:0] reg_wb_data_type_3c, reg_wb_data_type_2c, reg_wb_data_type_1c;
     reg [31:0] alu_out_reg_adjusted;
     reg [31:0] mem_data_adjusted;
-    reg [31:0] rs2_data_out_2c, rs2_data_out_1c, rs2_data_out_next;
+    reg [31:0] rs2_data_out_2c, rs2_data_out_1c;
     reg [4:0]  rs1_reg_offset, rs2_reg_offset, rd_reg_offset;
     reg [31:0] rd_reg_data_1c;
 
     // wires for the instruction decoder
     wire        update_pc_next;
     wire [4:0]  rd_reg_offset_next;
-    wire [3:0]  alu_operation_code_reg;
     wire [1:0]  mem_access_operation_next;
     wire        alu_mem_operation_n_next;
     wire        reg_wb_flag_next;
     wire [2:0]  reg_wb_data_type_next;
     wire [31:0] rs2_data_out_next;
-
-    assign alu_input_a = alu_input_a_reg;
-    assign alu_input_b = alu_input_b_reg;
-    assign alu_operation_code = alu_operation_code_reg;
-    assign alu_en = alu_en_reg;
-    assign int_rst_n = rst_n;
     
     // if we get any kind of jump instruction, then we need to freeze the value of the PC.
     // Read the instruction straight from DMEM, we have to do this before we even latch the instruction
@@ -105,26 +93,13 @@ module top(
         .freeze_pc(freeze_pc), 
         .halt(halt)
     );
-
-    alu u_alu (
-        .clk(clk), 
-        .rst_n(rst_n), 
-        .halt(halt),  // TODO: needs connecting
-        .signed_unsigned_n(signed_unsigned_n), // TODO: needs connecting
-        .op_val(alu_operation_code),
-        .operand_a(alu_input_a), 
-        .operand_b(alu_input_b), 
-        .alu_result_out(alu_output), //TODO: 33 bits
-        .alu_result_out_comb(alu_out_comb)
-        .carry_flag(alu_carry_flag),
-        .zero_flag(alu_zero_flag), 
-        .overflow_flag(alu_overflow_flag)
-    );
     
-    // Sequential Processes
+    // ******************
+    // Pipeline registers
+    // ******************
 
-    always @(posedge clk, negedge int_rst_n) begin
-        if(!int_rst_n) begin
+    always @(posedge clk, negedge rst_n) begin
+        if(!rst_n) begin
             rd_reg_offset_3c <= 5'b00000;
             rd_reg_offset_2c <= 5'b00000;
             rd_reg_offset_1c <= 5'b00000;
@@ -195,18 +170,20 @@ module top(
     // Instruction Fetch Stage
     //************************
 
-    // IR register sequential process, using a SYNCHRONOUS reset here (TODO: figure out if this is an issue)
+    // IR register sequential process, using a SYNCHRONOUS reset here
+    // TODO: reverted to async reset... why did I want to use sync reset ^ again???
     always @(posedge clk) begin
         if(!rst_n) begin 
-            instruction_pointer_reg    <= 32'd0;
             instruction_pointer_reg_1c <= 32'd0;
+            instruction_pointer_reg    <= 32'd0;
         end
         else begin
-            instruction_pointer_reg    <= INST_MEM_DATA_BUS;
             instruction_pointer_reg_1c <= instruction_pointer_reg;
+            instruction_pointer_reg    <= INST_MEM_DATA_BUS;
         end
     end
 
+    // TODO: need to think about this... seems weird to rely on this
     // the delayed version of the instruction will be equal to the instantaneous value during PC freezing (jal for example)
     // this creates a one-cycle pulse needed on update_pc_next
     assign decode_pulse = (instruction_pointer_reg != instruction_pointer_reg_1c);
@@ -226,9 +203,9 @@ module top(
         .rd_reg_offset_next(rd_reg_offset_next),
         .rs1_reg_offset(rs1_reg_offset), 
         .rs2_reg_offset(rs2_reg_offset), 
-        .alu_input_a_reg(alu_input_a_reg),
-        .alu_input_b_reg(alu_input_b_reg), 
-        .alu_operation_code_reg(alu_operation_code_reg), 
+        .alu_input_a(alu_input_a),
+        .alu_input_b(alu_input_b), 
+        .alu_operation_code_reg(alu_operation_code), 
         .mem_access_operation_next(mem_access_operation_next),
         .alu_mem_operation_n_next(alu_mem_operation_n_next), 
         .reg_wb_flag_next(reg_wb_flag_next), 
@@ -243,7 +220,27 @@ module top(
         .alu_out_reg_2c(alu_out_reg_2c), 
         .decode_pulse(decode_pulse)
     );
+
+
+    //********************
+    // Execute/ALU Stage
+    //********************
+    alu u_alu (
+        .clk(clk), 
+        .rst_n(rst_n), 
+        .halt(halt),
+        .signed_unsigned_n(signed_unsigned_n), // TODO: needs connecting
+        .op_val(alu_operation_code),
+        .operand_a(alu_input_a), 
+        .operand_b(alu_input_b), 
+        .alu_result_out(alu_output), //TODO: 33 bits
+        .alu_result_out_comb(alu_out_comb),
+        .carry_flag(alu_carry_flag),
+        .zero_flag(alu_zero_flag), 
+        .overflow_flag(alu_overflow_flag)
+    );
     
+
     //********************
     // Memory Access Stage
     //********************

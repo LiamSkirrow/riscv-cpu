@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`include "riscv-cpu/rtl/defines.v"
+`include "rtl/defines.v"
 
 // main instruction decoder, read in opcode and set control signals accordingly
 
@@ -10,19 +10,19 @@ module instruction_decode(
     input      [31:0] instruction_pointer_reg,
     input      [31:0] rs1_data_out,
     input      [31:0] rs2_data_out,
-    input      [4:0]  rd_reg_offset_1c,
+    input      [4:0]  rd_reg_offset_1c, // make pipeline reg at this level
     input      [4:0]  rd_reg_offset_2c,
     input      [4:0]  rd_reg_offset_3c,
-    input      [31:0] alu_out_comb,
-    input      [31:0] alu_output,
-    input      [31:0] alu_out_reg_1c,
-    input      [31:0] alu_out_reg_2c,
+    input      [31:0] alu_out_comb,     // TODO: needs to be conditionally removed if we're not forwarding
+    input      [31:0] alu_output,       // TODO: (optional needs to be conditionally removed if we're not forwarding
+    input      [31:0] alu_out_reg_1c,   // TODO: (optional needs to be conditionally removed if we're not forwarding
+    input      [31:0] alu_out_reg_2c,   // TODO: (optional needs to be conditionally removed if we're not forwarding
     output reg        update_pc_next,
     output reg [4:0]  rd_reg_offset_next,
     output reg [4:0]  rs1_reg_offset,
     output reg [4:0]  rs2_reg_offset,
-    output reg [31:0] alu_input_a_reg,
-    output reg [31:0] alu_input_b_reg,
+    output reg [31:0] alu_input_a,
+    output reg [31:0] alu_input_b,
     output reg [3:0]  alu_operation_code_reg,
     output reg [1:0]  mem_access_operation_next,
     output reg        alu_mem_operation_n_next,
@@ -39,6 +39,20 @@ module instruction_decode(
     wire rd_register_rs2_in_flight_three_cycle;
     wire [31:0] alu_input_a_wire;
     wire [31:0] alu_input_b_wire;
+
+    reg [31:0] alu_input_a_reg, alu_input_b_reg;
+
+    // latch the ALU input operands, pass out to ALU
+    always @(posedge clk or negedge rst_n) begin
+        if(!rst_n) begin
+            alu_input_a <= 32'd0;
+            alu_input_b <= 32'd0;
+        end
+        else begin
+            alu_input_a <= alu_input_a_reg;
+            alu_input_b <= alu_input_b_reg;          
+        end      
+    end
 
     // TODO: might be nice to parameterise operand forwarding, doesn't look particularly difficult
 
@@ -67,6 +81,10 @@ module instruction_decode(
     // TODO: need to pipeline stall here for a few clock cycles
     // to stall the pipeline it could be worth passing out a top level signal specifying how many clocks we want 
     // to stall for.
+
+    // Alternatively: simply bitwise OR the above flags, and if asserted, freeze the PC and override the instruction register 
+    //                to forcibly assert a NOP instruction. Once the data dependency has propagated through the pipeline, 
+    //                the bitwise OR flag will deassert.
 
     // assign alu_input_a_wire = rs1_data_out;  // ALU A input is the output data of rs1
     // assign alu_input_b_wire = rs2_data_out;  // ALU B input is the output data of rs2
