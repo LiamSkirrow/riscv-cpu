@@ -97,16 +97,17 @@ module reg_file(
                         register_file[32] <= register_file[32];
                     end
                     else begin
-                        register_file[32] <= register_file[32] + 32'd1;
+                        register_file[32] <= register_file[32] + 32'd4;
                     end
                 end
                 // jump instruction is occurring, need to update the PC to the new value
                 else begin
-                    register_file[32] <= reg_data_in;
+                    register_file[32]            <= reg_data_in;               // update the PC, thus completing the Jump/Branch
+                    register_file[rd_reg_offset] <= register_file[32] + 32'd4; // write PC+4 to the link register, could be x0 in case of no link
                 end
 
                 //only write to a register in the range of x1-x31 (+ PC). Don't write to the zero register x0.
-                if(!reg_rd_wrn) begin
+                if(!reg_rd_wrn && !update_pc) begin
                     register_file[rd_reg_offset] <= (rd_reg_offset == 5'd0) ? 32'd0 : reg_data_in;
                 end
             end

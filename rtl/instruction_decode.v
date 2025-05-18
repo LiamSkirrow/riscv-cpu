@@ -6,17 +6,16 @@
 module instruction_decode(
     input             clk,
     input             rst_n,
-    input             decode_pulse,
     input      [31:0] instruction_pointer_reg,
     input      [31:0] rs1_data_out,
     input      [31:0] rs2_data_out,
+    input      [31:0] pc_data_out,
     input      [4:0]  rd_reg_offset_1c, // make pipeline reg at this level
     input      [4:0]  rd_reg_offset_2c,
     input      [4:0]  rd_reg_offset_3c,
     input      [31:0] alu_out_comb,     // TODO: needs to be conditionally removed if we're not forwarding
     input      [31:0] alu_output,       // TODO: (optional needs to be conditionally removed if we're not forwarding
     input      [31:0] alu_out_reg_1c,   // TODO: (optional needs to be conditionally removed if we're not forwarding
-    input      [31:0] alu_out_reg_2c,   // TODO: (optional needs to be conditionally removed if we're not forwarding
     output reg        update_pc_next,
     output reg [4:0]  rd_reg_offset_next,
     output reg [4:0]  rs1_reg_offset,
@@ -123,7 +122,6 @@ module instruction_decode(
             7'b011_0111 : begin   // LUI
                 rd_reg_offset_next = instruction_pointer_reg[11:7];  // destination register being written to, must be triple registered/delayed for three ck cycles
                 alu_input_a_reg = {instruction_pointer_reg[31:12], 12'd0}; // ALU A input, 20 bits, set 12 LSBs to zero
-                alu_input_b_reg = 32'd0;                                   // ALU B input, zero
                 alu_operation_code_reg = `ALU_ADD_OP; // ALU is set to perform an addition operation
                 alu_mem_operation_n_next = 1'b1;      // indicate to the write back stage whether to load from ALU or memory, tripled registered/delayed for three ck cycles
                 reg_wb_flag_next = 1'b1;              // register write back will occur for this instruction, must be triple registered/delayed for three ck cycles
@@ -133,14 +131,15 @@ module instruction_decode(
             end
             7'b110_1111 : begin   // JAL
                 // create a single cycle pulse to ensure we don't execute the same instruction 5 times
-                update_pc_next = decode_pulse;   // in three clock cycles, update the PC to the decoded value below
+                update_pc_next = 1'b1;     // in three clock cycles, update the PC to the decoded value below
                 rd_reg_offset_next = instruction_pointer_reg[11:7];  // destination register being written to, must be triple registered/delayed for three ck cycles
                 
-                // TODO: this is wrong, need to instead shift
-                alu_input_a_reg = instruction_pointer_reg[31:12];   // ALU A input is...
-                alu_input_b_reg = 32'd0;                            // ALU B input is...
+                alu_input_a_reg = { {12{instruction_pointer_reg[31]}},
+                                   instruction_pointer_reg[19:12],
+                                   instruction_pointer_reg[20],
+                                   instruction_pointer_reg[30:21], 1'b0};   // ALU A input is...
+                alu_input_b_reg = pc_data_out;                              // ALU B input is the PC
                 alu_operation_code_reg = `ALU_ADD_OP; // ALU is set to perform an addition operation
-                // TODO: this is wrong, need to instead shift
                 
                 mem_access_operation_next = `MEM_NOP; // memory access stage will do nothing
                 alu_mem_operation_n_next = 1'b1;   // indicate to the write back stage whether to load from ALU or memory, tripled registered/delayed for three ck cycles
@@ -293,7 +292,7 @@ module instruction_decode(
                 rs1_reg_offset = instruction_pointer_reg[19:15];     // register address offset given by rs1 in INST
                 rs2_reg_offset = instruction_pointer_reg[24:20];     // register address offset given by rs2 in INST
                 alu_input_a_reg = alu_input_a_wire;    // ALU A input is the output data of rs1
-                alu_input_b_reg = alu_input_b_wire;    // ALU B input is the immediate in the instruction
+                alu_input_b_reg = alu_input_b_wire;    // ALU B input is the output data of rs2
                 mem_access_operation_next = `MEM_NOP; // memory access stage will perform a memory load operation
                 alu_mem_operation_n_next = 1'b1;   // indicate to the write back stage whether to load from ALU or memory, tripled registered/delayed for three ck cycles
                 reg_wb_flag_next = 1'b1;           // register write back will occur for this instruction, must be triple registered/delayed for three ck cycles              

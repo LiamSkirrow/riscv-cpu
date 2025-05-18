@@ -20,13 +20,26 @@ int main(int argc, char** argv, char** env) {
     m_trace->open("top_waves.fst");
 
     // initialised the code mem with the instructions to execute
-    int code_mem[CODE_MEM_SIZE] = {
-        0b00000000000100000010000010000011,   // lw
+    unsigned int code_mem[CODE_MEM_SIZE] = {
+        0b00000000000000000010000010000011,   // lw
         0b00000000000100000010000100000011,   // lw
         0b00000000000100000000000110000011,   // lb
         0b00000000000100000001001000000011,   // lh
         0b00000000000101010000010100010011,   // addi r10, r10, 1
-        0b00000000000000000000010001101111    // jal
+        0b11111110110111111111010001101111    // jal
+        
+        // 0b00000000000000000000010001101111    // jal
+
+        // 0b00000000000101010000010100010011,   // addi r10, r10, 1
+        // 0b00000000000101010000010100010011,   // addi r10, r10, 1
+        // 0b00000000000101010000010100010011,   // addi r10, r10, 1
+        // 0b00000000000101010000010100010011,   // addi r10, r10, 1
+        // 0b00000000000101010000010100010011,   // addi r10, r10, 1
+        // 0b00000000000101010000010100010011,   // addi r10, r10, 1
+        // 0b00000000000101010000010100010011,   // addi r10, r10, 1
+        // 0b00000000000101010000010100010011,   // addi r10, r10, 1
+        // 0b00000000000101010000010100010011,   // addi r10, r10, 1
+        // 0b00000000000000000000010001101111    // jal
     };
 
     unsigned int data_mem[DATA_MEM_SIZE] = {
@@ -48,8 +61,8 @@ int main(int argc, char** argv, char** env) {
 
         // fetch the instruction pointed to by PC
         if(sim_time > 0 && dut->clk == 0){
-            printf("Executing instruction at mem location: %8x\n", dut->INST_MEM_ADDRESS_BUS);
-            dut->INST_MEM_DATA_BUS = code_mem[dut->INST_MEM_ADDRESS_BUS];
+            printf("Executing instruction at byte location: %8x\n", dut->INST_MEM_ADDRESS_BUS);
+            dut->INST_MEM_DATA_BUS = code_mem[dut->INST_MEM_ADDRESS_BUS / 4];
             
             // TODO: this is buggy since it will always write/read every clock cycle, need a mem access valid
             // handle the CPU's RAM request (read or write)

@@ -25,7 +25,6 @@ module top(
         
     // instruction fetch
     reg [31:0] program_counter_reg, instruction_pointer_reg, instruction_pointer_reg_1c;
-    wire decode_pulse;
     // register file
     wire reg_rd_wrn;
     reg  [31:0] reg_data_in;
@@ -42,7 +41,6 @@ module top(
     wire alu_carry_flag;
     wire alu_zero_flag;
     wire alu_overflow_flag;
-    wire alu_done;
     // memory access
     reg [1:0] mem_access_operation_2c, mem_access_operation_1c;
     reg mem_access_read_wrn;
@@ -55,13 +53,14 @@ module top(
     reg [4:0] rd_reg_offset_3c, rd_reg_offset_2c, rd_reg_offset_1c;
     reg reg_wb_flag_3c, reg_wb_flag_2c, reg_wb_flag_1c;
     reg alu_mem_operation_n_3c, alu_mem_operation_n_2c, alu_mem_operation_n_1c;
-    reg [31:0] alu_out_reg_2c, alu_out_reg_1c, alu_out_reg_next;
+    reg [31:0] alu_out_reg_1c;
     reg [2:0] reg_wb_data_type_3c, reg_wb_data_type_2c, reg_wb_data_type_1c;
     reg [31:0] alu_out_reg_adjusted;
     reg [31:0] mem_data_adjusted;
     reg [31:0] rs2_data_out_2c, rs2_data_out_1c;
     reg [4:0]  rs1_reg_offset, rs2_reg_offset, rd_reg_offset;
     reg [31:0] rd_reg_data_1c;
+    reg freeze_pc_reg;
 
     // wires for the instruction decoder
     wire        update_pc_next;
@@ -119,7 +118,6 @@ module top(
             rs2_data_out_2c <= 32'd0;
             rs2_data_out_1c <= 32'd0;
 
-            alu_out_reg_2c <= 32'h0000_0000;
             alu_out_reg_1c <= 32'h0000_0000;
             mem_data_1c <= 32'h0000_0000;
             mem_access_operation_2c <= 2'b00;
@@ -155,8 +153,7 @@ module top(
                 mem_access_operation_1c <= mem_access_operation_next;
 
                 mem_data_1c <= MEM_ACCESS_DATA_IN_BUS;
-                alu_out_reg_2c <= alu_out_reg_1c;
-                alu_out_reg_1c <= alu_out_reg_next;
+                alu_out_reg_1c <= alu_output;
 
                 update_pc_3c <= update_pc_2c;
                 update_pc_2c <= update_pc_1c;
@@ -174,19 +171,18 @@ module top(
     // TODO: reverted to async reset... why did I want to use sync reset ^ again???
     always @(posedge clk) begin
         if(!rst_n) begin 
+            freeze_pc_reg              <= 1'b0;
             instruction_pointer_reg_1c <= 32'd0;
             instruction_pointer_reg    <= 32'd0;
         end
         else begin
+            freeze_pc_reg              <= freeze_pc;
             instruction_pointer_reg_1c <= instruction_pointer_reg;
-            instruction_pointer_reg    <= INST_MEM_DATA_BUS;
+            instruction_pointer_reg    <= freeze_pc_reg ? {24'd0, 8'h13} : INST_MEM_DATA_BUS;
+                                                        // ^ADDI x0, x0, 0 -> NOP
+                                                        // 000000000000 00000 000 0000 00010011
         end
     end
-
-    // TODO: need to think about this... seems weird to rely on this
-    // the delayed version of the instruction will be equal to the instantaneous value during PC freezing (jal for example)
-    // this creates a one-cycle pulse needed on update_pc_next
-    assign decode_pulse = (instruction_pointer_reg != instruction_pointer_reg_1c);
 
     //*************************
     // Instruction Decode Stage
@@ -199,6 +195,7 @@ module top(
         .instruction_pointer_reg(instruction_pointer_reg), 
         .rs1_data_out(rs1_data_out), 
         .rs2_data_out(rs2_data_out),
+        .pc_data_out(pc_data_out),
         .update_pc_next(update_pc_next), 
         .rd_reg_offset_next(rd_reg_offset_next),
         .rs1_reg_offset(rs1_reg_offset), 
@@ -216,15 +213,14 @@ module top(
         .rd_reg_offset_1c(rd_reg_offset_1c), 
         .rd_reg_offset_2c(rd_reg_offset_2c), 
         .rd_reg_offset_3c(rd_reg_offset_3c),
-        .alu_out_reg_1c(alu_out_reg_1c), 
-        .alu_out_reg_2c(alu_out_reg_2c), 
-        .decode_pulse(decode_pulse)
+        .alu_out_reg_1c(alu_out_reg_1c)
     );
 
 
     //********************
     // Execute/ALU Stage
     //********************
+
     alu u_alu (
         .clk(clk), 
         .rst_n(rst_n), 
@@ -258,49 +254,39 @@ module top(
                 mem_access_data_out_bus_adjusted = $signed(rs2_data_out_2c[7:0]);
             end
             default : begin
-                mem_access_data_out_bus_adjusted = 32'hDEAD_BEEF; //TODO: replace with 32'd0
+                mem_access_data_out_bus_adjusted = 32'h0;
             end
         endcase
     end
 
     always @(*) begin
-        // only proceed if the alu_done flag is high (up to the correct stage in the pipeline)
-        if(alu_done) begin
-            case (mem_access_operation_2c) 
-                2'b00 : begin   // MEM LOAD
-                    // set top level memory interface READ bit
-                    // set the address bus
-                    // read the value from the data bus into mem_data_next (latched on next clock edge), performed at top of code
-                    
-                    mem_access_read_wrn = 1'b1;
-                    mem_access_address_bus = alu_output;
-                    mem_access_done = 1'b1;  // TODO: check in TB what happens when this is removed
-                end
-                2'b01 : begin   // MEM STORE
-                    // set top level memory interface WRITE bit
-                    // set the address bus
-                    // write the value to the data bus to RAM (latched on next clock edge)
+        case (mem_access_operation_2c) 
+            2'b00 : begin   // MEM LOAD
+                // set top level memory interface READ bit
+                // set the address bus
+                // read the value from the data bus into mem_data_next (latched on next clock edge), performed at top of code
+                
+                mem_access_read_wrn = 1'b1;
+                mem_access_address_bus = alu_output;
+                mem_access_done = 1'b1;  // TODO: check in TB what happens when this is removed
+            end
+            2'b01 : begin   // MEM STORE
+                // set top level memory interface WRITE bit
+                // set the address bus
+                // write the value to the data bus to RAM (latched on next clock edge)
 
-                    mem_access_read_wrn = 1'b0;
-                    mem_access_address_bus = alu_output;
-                    mem_access_data_out_bus = mem_access_data_out_bus_adjusted;
-                    
-                end
-                default : begin   // MEM NOP
-                    // NOP case, don't interface with memory at all...
-                    mem_access_read_wrn = 1'b1; 
-                    alu_out_reg_next = alu_output;
-                    mem_access_address_bus = 16'd0;
-                    mem_access_data_out_bus = 32'd0;
-                end
-            endcase
-        end
-        // TODO: add all signals here, set to sensible inactive values
-        else begin
-            mem_access_read_wrn = 1'b1; 
-            alu_out_reg_next = alu_output;
-            mem_access_address_bus = 16'd0;
-        end
+                mem_access_read_wrn = 1'b0;
+                mem_access_address_bus = alu_output;
+                mem_access_data_out_bus = mem_access_data_out_bus_adjusted;
+                
+            end
+            default : begin   // MEM NOP
+                // NOP case, don't interface with memory at all...
+                mem_access_read_wrn = 1'b1; 
+                mem_access_address_bus = 16'd0;
+                mem_access_data_out_bus = 32'd0;
+            end
+        endcase
     end
 
 
