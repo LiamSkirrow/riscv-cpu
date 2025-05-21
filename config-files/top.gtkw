@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Sun May 18 18:52:18 2025
+[*] Wed May 21 22:36:01 2025
 [*]
 [dumpfile] "/mnt/c/Users/Liam/OneDrive/Documents/Code/riscv-cpu/top_waves.fst"
-[dumpfile_mtime] "Sun May 18 18:45:15 2025"
-[dumpfile_size] 3622
+[dumpfile_mtime] "Wed May 21 22:35:41 2025"
+[dumpfile_size] 3552
 [savefile] "/mnt/c/Users/Liam/OneDrive/Documents/Code/riscv-cpu/config-files/top.gtkw"
 [timestart] 0
 [size] 1536 793
 [pos] -1 -1
-*-4.869069 82 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-4.623957 14 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] TOP.
 [treeopen] TOP.top.
 [sst_width] 272
@@ -19,7 +19,6 @@
 @28
 TOP.top.clk
 TOP.top.halt
-@29
 TOP.top.rst_n
 @22
 TOP.top.INST_MEM_ADDRESS_BUS[31:0]
@@ -69,10 +68,12 @@ TOP.top.MEM_ACCESS_READ_WRN
 @22
 TOP.top.instruction_pointer_reg[31:0]
 @28
-TOP.top.decode_pulse
 TOP.top.freeze_pc
 TOP.top.freeze_pc_reg
 TOP.top.update_pc_next
+@22
+TOP.top.u_inst_decode.rd_reg_offset_next[4:0]
+@28
 TOP.top.update_pc_1c
 TOP.top.update_pc_2c
 TOP.top.update_pc_3c
@@ -80,8 +81,26 @@ TOP.top.reg_wb_flag_3c
 @22
 TOP.top.rd_reg_offset_3c[4:0]
 TOP.top.reg_data_in[31:0]
+@28
+TOP.top.u_inst_decode.update_pc_next
+@22
+TOP.top.u_inst_decode.alu_input_a_reg[31:0]
+TOP.top.u_inst_decode.alu_input_b_reg[31:0]
+TOP.top.u_inst_decode.alu_input_a[31:0]
+TOP.top.u_inst_decode.alu_input_b[31:0]
 @800200
 -ALU
+@28
+TOP.top.u_alu.jump_instruction
+@22
+TOP.top.u_alu.alu_result_out[31:0]
+TOP.top.u_alu.alu_result[31:0]
+@23
+TOP.top.u_alu.alu_result_out[31:0]
+@22
+TOP.top.u_alu.operand_a[31:0]
+TOP.top.u_alu.operand_b[31:0]
+TOP.top.u_alu.alu_result_out_comb[31:0]
 @1000200
 -ALU
 @800200

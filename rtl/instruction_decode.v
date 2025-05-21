@@ -41,6 +41,11 @@ module instruction_decode(
 
     reg [31:0] alu_input_a_reg, alu_input_b_reg;
 
+    // FIXME: UP TO HERE!!!
+    //        it seems that creating output regs causes it to infer synchronous elements whereas I want
+    //        purely combo logic... need to recast with local regs and then assign wires and pass those out
+    //        instead
+
     // latch the ALU input operands, pass out to ALU
     always @(posedge clk or negedge rst_n) begin
         if(!rst_n) begin
@@ -380,7 +385,19 @@ module instruction_decode(
             end
 
             default : begin   // UNRECOGNISED OPCODE STATE
-                //TODO: could include a top-level output to signal an invalid opcode detect...
+                //TODO: raise an illegal opcode exception
+                update_pc_next = 1'b0;
+                rd_reg_offset_next = 5'd0;
+                rs1_reg_offset = 5'd0;
+                rs2_reg_offset = 5'd0;
+                alu_input_a_reg = 32'd0;
+                alu_input_b_reg = 32'd0;
+                alu_operation_code_reg = 4'b0000;
+                mem_access_operation_next = `MEM_NOP;
+                alu_mem_operation_n_next = 1'b0;
+                reg_wb_flag_next = 1'b0;
+                reg_wb_data_type_next = `REG_WB_WORD;
+                rs2_data_out_next = 32'd0;
             end
         endcase
     end

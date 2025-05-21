@@ -28,6 +28,7 @@ module alu(
     // local signals
     reg [32:0] alu_result_next; // 33 bits to allow for carry bit as MSB
     reg [31:0] alu_result;
+    wire [31:0] alu_result_interim;
 
     always @(posedge clk, negedge rst_n) begin
         if(!rst_n) begin
@@ -37,7 +38,7 @@ module alu(
         end
         else begin
             if(!halt) begin
-                alu_result <= alu_result_next[31:0];
+                alu_result <= alu_result_interim[31:0];
                 // flag register bits
                 carry_flag <= alu_result_next[32];
                 zero_flag  <= (alu_result_next[31:0] == 32'h0000_0000);
@@ -95,8 +96,9 @@ module alu(
     end 
 
     // the riscv spec guarantees that jal/jalr instructions have their LSB set to zero
-    assign alu_result_out = jump_instruction ? {alu_result[31:1], 1'b0} : alu_result;
+    assign alu_result_interim = jump_instruction ? {alu_result_next[31:1], 1'b0} : alu_result_next[31:0];
     // instantaneous output used for operand forwarding
     assign alu_result_out_comb = alu_result_next[31:0];
+    assign alu_result_out = alu_result;
     
 endmodule
