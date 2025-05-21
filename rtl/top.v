@@ -228,6 +228,7 @@ module top(
         .rst_n(rst_n), 
         .halt(halt),
         .signed_unsigned_n(signed_unsigned_n), // TODO: needs connecting
+        .jump_instruction(update_pc_1c),
         .op_val(alu_operation_code),
         .operand_a(alu_input_a), 
         .operand_b(alu_input_b), 
@@ -334,7 +335,7 @@ module top(
             // address the zero register r0, no write operation will occur
             rd_reg_offset = 5'd0;
             reg_data_in = 32'd0;
-        end          
+        end
     end
 
     assign MEM_ACCESS_READ_WRN = mem_access_read_wrn;    

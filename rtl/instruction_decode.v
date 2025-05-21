@@ -127,11 +127,15 @@ module instruction_decode(
                 reg_wb_flag_next = 1'b1;              // register write back will occur for this instruction, must be triple registered/delayed for three ck cycles
             end
             7'b001_0111 : begin   // AUIPC
-            
+                rd_reg_offset_next = instruction_pointer_reg[11:7];  // destination register being written to, must be triple registered/delayed for three ck cycles
+                alu_input_a_reg = {instruction_pointer_reg[31:12], 12'd0}; // ALU A input, 20 bits, set 12 LSBs to zero
+                alu_input_b_reg = pc_data_out;        // ALU B input is the PC
+                alu_operation_code_reg = `ALU_ADD_OP; // ALU is set to perform an addition operation
+                alu_mem_operation_n_next = 1'b1;      // indicate to the write back stage whether to load from ALU or memory, tripled registered/delayed for three ck cycles
+                reg_wb_flag_next = 1'b1;              // register write back will occur for this instruction, must be triple registered/delayed for three ck cycles            
             end
             7'b110_1111 : begin   // JAL
-                // create a pulse (gets cleared by top level freeze_pc_reg logic) to ensure we don't fill the pipeline with the same instruction
-                update_pc_next = 1'b1;     // in three clock cycles, update the PC to the decoded value below
+                update_pc_next = 1'b1;     // in three clock cycles, update the PC to the target address from the ALU
                 rd_reg_offset_next = instruction_pointer_reg[11:7];  // destination register being written to, must be triple registered/delayed for three ck cycles
                 
                 // the ALU calculates the branch/jump target address
@@ -147,7 +151,19 @@ module instruction_decode(
                 reg_wb_flag_next = 1'b1;           // register write back will occur for this instruction, must be triple registered/delayed for three ck cycles
             end
             7'b110_0111 : begin   // JALR
-            
+                update_pc_next = 1'b1;     // in three clock cycles, update the PC to the target address from the ALU
+                rd_reg_offset_next = instruction_pointer_reg[11:7];  // destination register being written to, must be triple registered/delayed for three ck cycles
+                rs1_reg_offset = instruction_pointer_reg[19:15];     // register address offset given by rs1 in INST
+                
+                // the ALU calculates the branch/jump target address
+                alu_input_a_reg = { {21{instruction_pointer_reg[31]}},
+                                        instruction_pointer_reg[29:19]};   // ALU A input is...
+                alu_input_b_reg = alu_input_a_wire;                        // ALU B input is the PC
+                alu_operation_code_reg = `ALU_ADD_OP; // ALU is set to perform an addition operation
+                
+                mem_access_operation_next = `MEM_NOP; // memory access stage will do nothing
+                alu_mem_operation_n_next = 1'b1;   // indicate to the write back stage whether to load from ALU or memory, tripled registered/delayed for three ck cycles
+                reg_wb_flag_next = 1'b1;           // register write back will occur for this instruction, must be triple registered/delayed for three ck cycles
             end
             7'b110_0011 : begin   // BEQ, BNE, BLT, BGE, BLTU, BGEU
                 // rd_reg_offset_next = `REG_FILE_PC_OFFSET;            // rd_register_offset not needed for this instruction 
