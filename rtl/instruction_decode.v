@@ -130,10 +130,11 @@ module instruction_decode(
             
             end
             7'b110_1111 : begin   // JAL
-                // create a single cycle pulse to ensure we don't execute the same instruction 5 times
+                // create a pulse (gets cleared by top level freeze_pc_reg logic) to ensure we don't fill the pipeline with the same instruction
                 update_pc_next = 1'b1;     // in three clock cycles, update the PC to the decoded value below
                 rd_reg_offset_next = instruction_pointer_reg[11:7];  // destination register being written to, must be triple registered/delayed for three ck cycles
                 
+                // the ALU calculates the branch/jump target address
                 alu_input_a_reg = { {12{instruction_pointer_reg[31]}},
                                    instruction_pointer_reg[19:12],
                                    instruction_pointer_reg[20],

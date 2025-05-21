@@ -169,7 +169,7 @@ module top(
 
     // IR register sequential process, using a SYNCHRONOUS reset here
     // TODO: reverted to async reset... why did I want to use sync reset ^ again???
-    always @(posedge clk) begin
+    always @(posedge clk or negedge rst_n) begin
         if(!rst_n) begin 
             freeze_pc_reg              <= 1'b0;
             instruction_pointer_reg_1c <= 32'd0;
@@ -179,8 +179,10 @@ module top(
             freeze_pc_reg              <= freeze_pc;
             instruction_pointer_reg_1c <= instruction_pointer_reg;
             instruction_pointer_reg    <= freeze_pc_reg ? {24'd0, 8'h13} : INST_MEM_DATA_BUS;
-                                                        // ^ADDI x0, x0, 0 -> NOP
+                                                        // ^ADDI x0, x0, 0 => NOP
                                                         // 000000000000 00000 000 0000 00010011
+            // FIXME: consider moving this mux after the fetch pipeline registers so that we can reuse it for the non-forwarding logic
+            //        refer to diagram in book...
         end
     end
 
