@@ -40,6 +40,7 @@ module instruction_decode(
     wire [31:0] alu_input_b_wire;
 
     reg [31:0] alu_input_a_reg, alu_input_b_reg;
+    reg branch_conditional_check;
 
     // FIXME: UP TO HERE!!!
     //        it seems that creating output regs causes it to infer synchronous elements whereas I want
@@ -110,6 +111,7 @@ module instruction_decode(
 
     always @(*) begin
         // set sensible (inactive) default values for all registers
+        branch_conditional_check = 1'b0;
         update_pc_next = 1'b0;
         rd_reg_offset_next = 5'd0;
         rs1_reg_offset = 5'd0;
@@ -171,33 +173,45 @@ module instruction_decode(
                 reg_wb_flag_next = 1'b1;           // register write back will occur for this instruction, must be triple registered/delayed for three ck cycles
             end
             7'b110_0011 : begin   // BEQ, BNE, BLT, BGE, BLTU, BGEU
-                // rd_reg_offset_next = `REG_FILE_PC_OFFSET;            // rd_register_offset not needed for this instruction 
-                // rs1_reg_offset = instruction_pointer_reg[19:15];     // register address offset given by rs1 in INST
-                // rs2_reg_offset = instruction_pointer_reg[24:20];     // register address offset given by rs2 in INST
-                // alu_input_a_reg = pc_data_out;                       // the PC's current value
-                // alu_input_b_reg = {{instruction_pointer_reg[31]}, {instruction_pointer_reg[7]},
-                //                    {instruction_pointer_reg[30:25]}, {instruction_pointer_reg[11:8]}};   // immediate value in INST
-                // alu_mem_operation_n_next = 1'b1;        // indicate to the write back stage whether to load from ALU or memory, tripled registered/delayed for three ck cycles
-                // mem_access_operation_next = `MEM_NOP;   // set to inactive value
-                // reg_wb_data_type_next = 3'b000;         // set to inactive value
+                rs1_reg_offset = instruction_pointer_reg[19:15];     // register address offset given by rs1 in INST
+                rs2_reg_offset = instruction_pointer_reg[24:20];     // register address offset given by rs2 in INST
+                alu_input_a_reg = pc_data_out;                       // the PC's current value
+                alu_input_b_reg = {{20{instruction_pointer_reg[31]}}, 
+                                   {instruction_pointer_reg[7]},
+                                   {instruction_pointer_reg[30:25]}, 
+                                   {instruction_pointer_reg[11:8]}, 
+                                   1'b0};   // immediate value in INST
+                alu_mem_operation_n_next = 1'b1;        // indicate to the write back stage whether to load from ALU or memory, tripled registered/delayed for three ck cycles
+                mem_access_operation_next = `MEM_NOP;   // set to inactive value
+                reg_wb_data_type_next = 3'b000;         // set to inactive value
 
-                // case(instruction_pointer_reg[14:12])
-                //     3'b000 : begin   // BEQ
-                //         alu_operation_code_reg    = (rs1_data_out == rs2_data_out) ? `ALU_ADD_OP : `ALU_NOP_OP;   // conditionally perform an ALU add
-                //         reg_wb_flag_next          = (rs1_data_out == rs2_data_out) ? 1'b1 : 1'b0;   // conditional register write enable/disable
-                //         pipeline_flush_n_next     = (rs1_data_out == rs2_data_out) ? 1'b0 : 1'b1;   // conditional pipeline flush signal -> ACTIVE LOW
-                //     end
+                alu_operation_code_reg    = branch_conditional_check ? `ALU_ADD_OP : `ALU_NOP_OP;  // conditionally perform an ALU add
+                // reg_wb_flag_next          = branch_conditional_check;                              // conditional register write enable/disable
+                update_pc_next            = branch_conditional_check;                              // in three clock cycles, update the PC to the target address from the ALU
 
-                //     // TODO: need to think about pipeline_flush_n_ff/next signal, needs to go active for only one clock cycle (?)
-                //     //       -> ternary on line 100 ????
-                    
-                //     default : begin //TODO: fill this with the remaining signals...
-                //         reg_wb_data_type_next = `REG_WB_WORD;
-                //     end
-
-                // endcase
-
-
+                case(instruction_pointer_reg[14:12])
+                    3'b000 : begin   // BEQ
+                        branch_conditional_check = (alu_input_a_wire == alu_input_b_wire);
+                    end
+                    3'b001 : begin   // BNE
+                        branch_conditional_check = (alu_input_a_wire != alu_input_b_wire);
+                    end
+                    3'b100 : begin   // BLT
+                        branch_conditional_check = (alu_input_a_wire < alu_input_b_wire);
+                    end
+                    3'b101 : begin   // BGE
+                        branch_conditional_check = (alu_input_a_wire >= alu_input_b_wire);
+                    end
+                    3'b110 : begin   // BLTU
+                        branch_conditional_check = ($signed(alu_input_a_wire) < $signed(alu_input_b_wire));
+                    end
+                    3'b111 : begin   // BGEU
+                        branch_conditional_check = ($signed(alu_input_a_wire) >= $signed(alu_input_b_wire));
+                    end
+                    default : begin //TODO: should this actually generate an illegal instruction exception?
+                        branch_conditional_check = 1'b0;
+                    end
+                endcase
             end
             7'b000_0011 : begin   // LB, LH, LW, LBU, LHU
                 rd_reg_offset_next = instruction_pointer_reg[11:7];  // destination register being written to, must be triple registered/delayed for three ck cycles
