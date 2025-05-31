@@ -61,16 +61,16 @@ int main(int argc, char** argv, char** env) {
 
         // fetch the instruction pointed to by PC
         if(sim_time > 0 && dut->clk == 0){
-            printf("Executing instruction at byte location: %8x\n", dut->INST_MEM_ADDRESS_BUS);
-            dut->INST_MEM_DATA_BUS = code_mem[dut->INST_MEM_ADDRESS_BUS / 4];
+            printf("Executing instruction at byte location: %8x\n", dut->IMEM_ADDRESS_BUS);
+            dut->IMEM_DATA_BUS = code_mem[dut->IMEM_ADDRESS_BUS / 4];
             
             // TODO: this is buggy since it will always write/read every clock cycle, need a mem access valid
             // handle the CPU's RAM request (read or write)
-            if(dut->MEM_ACCESS_READ_WRN == 1){
-                dut->MEM_ACCESS_DATA_IN_BUS = data_mem[dut->MEM_ACCESS_ADDRESS_BUS];
+            if(dut->DMEM_READ_WRN == 1){
+                dut->DMEM_DATA_IN_BUS = data_mem[dut->DMEM_ADDRESS_BUS];
             }
             else{
-                data_mem[dut->MEM_ACCESS_ADDRESS_BUS] = dut->MEM_ACCESS_DATA_OUT_BUS;
+                data_mem[dut->DMEM_ADDRESS_BUS] = dut->DMEM_DATA_OUT_BUS;
             }
         }
 

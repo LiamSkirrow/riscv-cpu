@@ -13,14 +13,14 @@
 module top(
     input wire clk,
     input wire rst_n,
-    input wire halt,                             // halt the CPU pipeline
-    input wire [31:0] INST_MEM_DATA_BUS,         // current instruction
-    input wire [31:0] MEM_ACCESS_DATA_IN_BUS,    // RAM register block data input bus
+    input wire halt,                        // halt the CPU pipeline
+    input  wire [31:0] IMEM_DATA_BUS,       // current instruction
+    output wire [31:0] IMEM_ADDRESS_BUS,    // address bus driving the code memory, direct output of PC
 
-    output wire [31:0] INST_MEM_ADDRESS_BUS,     // address bus driving the code memory, direct output of PC
-    output wire MEM_ACCESS_READ_WRN,             // control signal to RAM register block indicating whether a read or write
-    output wire [15:0] MEM_ACCESS_ADDRESS_BUS,   // RAM register block address bus
-    output wire [31:0] MEM_ACCESS_DATA_OUT_BUS   // RAM register block data output bus
+    output wire        DMEM_READ_WRN,       // control signal to RAM register block indicating whether a read or write
+    output wire [15:0] DMEM_ADDRESS_BUS,    // RAM register block address bus
+    input  wire [31:0] DMEM_DATA_IN_BUS,    // RAM register block data input bus
+    output wire [31:0] DMEM_DATA_OUT_BUS    // RAM register block data output bus
     );
         
     // instruction fetch
@@ -74,7 +74,7 @@ module top(
     // if we get any kind of jump instruction, then we need to freeze the value of the PC.
     // Read the instruction straight from DMEM, we have to do this before we even latch the instruction
     // since it would be too late by then, and the PC would have already advanced to the next address.
-    assign freeze_pc = (INST_MEM_DATA_BUS[6:0] == 7'b110_1111);
+    assign freeze_pc = (IMEM_DATA_BUS[6:0] == 7'b110_1111);
 
     // instantiate sub-modules
     reg_file u_reg_file (
@@ -152,7 +152,7 @@ module top(
                 mem_access_operation_2c <= mem_access_operation_1c;
                 mem_access_operation_1c <= mem_access_operation_next;
 
-                mem_data_1c <= MEM_ACCESS_DATA_IN_BUS;
+                mem_data_1c <= DMEM_DATA_IN_BUS;
                 alu_out_reg_1c <= alu_output;
 
                 update_pc_3c <= update_pc_2c;
@@ -178,7 +178,7 @@ module top(
         else begin
             freeze_pc_reg              <= freeze_pc;
             instruction_pointer_reg_1c <= instruction_pointer_reg;
-            instruction_pointer_reg    <= freeze_pc_reg ? {24'd0, 8'h13} : INST_MEM_DATA_BUS;
+            instruction_pointer_reg    <= freeze_pc_reg ? {24'd0, 8'h13} : IMEM_DATA_BUS;
                                                         // ^ADDI x0, x0, 0 => NOP
                                                         // 000000000000 00000 000 0000 00010011
             // FIXME: consider moving this mux after the fetch pipeline registers so that we can reuse it for the non-forwarding logic
@@ -338,9 +338,9 @@ module top(
         end
     end
 
-    assign MEM_ACCESS_READ_WRN = mem_access_read_wrn;    
-    assign MEM_ACCESS_ADDRESS_BUS = mem_access_address_bus;
-    assign MEM_ACCESS_DATA_OUT_BUS = mem_access_data_out_bus;
-    assign INST_MEM_ADDRESS_BUS = pc_data_out;
+    assign DMEM_READ_WRN = mem_access_read_wrn;    
+    assign DMEM_ADDRESS_BUS = mem_access_address_bus;
+    assign DMEM_DATA_OUT_BUS = mem_access_data_out_bus;
+    assign IMEM_ADDRESS_BUS = pc_data_out;
         
 endmodule
