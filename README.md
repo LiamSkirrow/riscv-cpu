@@ -7,6 +7,10 @@ The intention is to compile and simulate the Verilog using Verilator.
 - Similarly, going `make` should compile the whole project from the top level (equivalent to running `make top`).
 - Can dump waveform output when setting `WAVES=1` for any module in the design. The waveform dump is of FST format.
 
+- NOTE: running GTKWave on WSL
+  - cmd$> xming
+  - cmd$> export DISPLAY=:0
+
 ## TODO:
 - Self-checking autotests? Should be invoked from the Makefile
 - include draw.io diagram in the README, showing the structure of the CPU including the actual RTL signal names
