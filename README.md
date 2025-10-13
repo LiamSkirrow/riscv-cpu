@@ -8,7 +8,7 @@ The intention is to compile and simulate the Verilog using Verilator.
 - Can dump waveform output when setting `WAVES=1` for any module in the design. The waveform dump is of FST format.
 
 - NOTE: running GTKWave on WSL
-  - cmd$> xming
+  - cmd$> xming (open in windows start menu)
   - cmd$> export DISPLAY=:0
 
 ## TODO:
