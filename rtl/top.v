@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
-// `include "riscv-cpu/rtl/defines.v"
-`include "rtl/defines.v"
+// `include "rtl/defines.v"
+// TODO: the above include interferes with the top level cpu debug harness
 
 // ***
 // NOTES: 
