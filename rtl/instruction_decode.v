@@ -75,16 +75,16 @@ module instruction_decode(
 
     // operand forwarding logic
     // check if the current register we're trying to read from has been modified by the previous instruction (N-1)
-    assign rd_register_rs1_in_flight_one_cycle  = (rs1_reg_offset == rd_reg_offset_1c) && (rs1_reg_offset != 32'd0);
-    assign rd_register_rs2_in_flight_one_cycle  = (rs2_reg_offset == rd_reg_offset_1c) && (rs2_reg_offset != 32'd0);
+    assign rd_register_rs1_in_flight_one_cycle  = (rs1_reg_offset == rd_reg_offset_1c) && (rs1_reg_offset != 5'd0);
+    assign rd_register_rs2_in_flight_one_cycle  = (rs2_reg_offset == rd_reg_offset_1c) && (rs2_reg_offset != 5'd0);
 
     // check if the current register we're trying to read from has been modified by the 2nd most previous instruction (N-2)
-    assign rd_register_rs1_in_flight_two_cycle  = (rs1_reg_offset == rd_reg_offset_2c) && (rs1_reg_offset != 32'd0);
-    assign rd_register_rs2_in_flight_two_cycle  = (rs2_reg_offset == rd_reg_offset_2c) && (rs2_reg_offset != 32'd0);
+    assign rd_register_rs1_in_flight_two_cycle  = (rs1_reg_offset == rd_reg_offset_2c) && (rs1_reg_offset != 5'd0);
+    assign rd_register_rs2_in_flight_two_cycle  = (rs2_reg_offset == rd_reg_offset_2c) && (rs2_reg_offset != 5'd0);
 
     // check if the current register we're trying to read from has been modified by the 3rd most previous instruction (N-3)
-    assign rd_register_rs1_in_flight_three_cycle  = (rs1_reg_offset == rd_reg_offset_3c) && (rs1_reg_offset != 32'd0);
-    assign rd_register_rs2_in_flight_three_cycle  = (rs2_reg_offset == rd_reg_offset_3c) && (rs2_reg_offset != 32'd0);
+    assign rd_register_rs1_in_flight_three_cycle  = (rs1_reg_offset == rd_reg_offset_3c) && (rs1_reg_offset != 5'd0);
+    assign rd_register_rs2_in_flight_three_cycle  = (rs2_reg_offset == rd_reg_offset_3c) && (rs2_reg_offset != 5'd0);
 
 `ifndef OPERAND_FORWARDING
     // TODO: need to pipeline stall here for a few clock cycles
@@ -223,7 +223,8 @@ module instruction_decode(
                 rs2_reg_offset = 5'd0;                               // register address offset for rs2, not needed in this instruction
                 // TODO: make sure operand forwarding doesn't break this next line of code
                 alu_input_a_reg = alu_input_a_wire;   // ALU A input is the output data of rs1
-                alu_input_b_reg = instruction_pointer_reg[31:20];    // ALU B input is the immediate in the instruction
+                // TODO: do I need to actually sign extend the below line???
+                alu_input_b_reg = {20'd0, instruction_pointer_reg[31:20]};    // ALU B input is the immediate in the instruction
                 alu_operation_code_reg = `ALU_ADD_OP; // ALU is set to perform an addition operation
                 mem_access_operation_next = `MEM_LOAD; // memory access stage will perform a memory load operation
                 // alu_mem_operation_n_next = 1'b0;   // indicate to the write back stage whether to load from ALU or memory, tripled registered/delayed for three ck cycles
@@ -257,7 +258,8 @@ module instruction_decode(
                 rs2_reg_offset = instruction_pointer_reg[24:20];     // register address offset given by rs2 in INST
                 // TODO: make sure operand forwarding doesn't break this next line of code
                 alu_input_a_reg = alu_input_a_wire;   // ALU A input is the output data of rs1
-                alu_input_b_reg = {{instruction_pointer_reg[31:25]}, 
+                // TODO: do I need to actually sign extend the below line???
+                alu_input_b_reg = {21'd0, {instruction_pointer_reg[31:25]}, 
                                         instruction_pointer_reg[10:7]};    // ALU B input is the immediate in the instruction
                 alu_operation_code_reg = `ALU_ADD_OP;   // ALU is set to perform an addition operation
                 mem_access_operation_next = `MEM_STORE; // memory access stage will perform a memory store operation
@@ -285,7 +287,8 @@ module instruction_decode(
                 rs1_reg_offset = instruction_pointer_reg[19:15];     // register address offset given by rs1 in INST
                 rs2_reg_offset = 5'd0;                               // register address offset for rs2, not needed in this instruction
                 alu_input_a_reg = alu_input_a_wire;                // Feed wire from operand forwarding logic
-                alu_input_b_reg = instruction_pointer_reg[31:20];  // ALU B input is the immediate in the instruction
+                // TODO: do I need to actually sign extend the below line???
+                alu_input_b_reg = {20'd0, instruction_pointer_reg[31:20]};  // ALU B input is the immediate in the instruction
                 mem_access_operation_next = `MEM_NOP; // memory access stage will perform a memory load operation
                 alu_mem_operation_n_next = 1'b1;   // indicate to the write back stage whether to load from ALU or memory, tripled registered/delayed for three ck cycles
                 reg_wb_flag_next = 1'b1;           // register write back will occur for this instruction, must be triple registered/delayed for three ck cycles                    
@@ -388,6 +391,8 @@ module instruction_decode(
             
             end
 
+            // TODO: add bubble flag here (set to 1), pass it down the pipeline and use it to 
+            //       detect whether instructions are being retired or not
             7'b000_0000 : begin   // PIPELINE BUBBLE STATE
                 // set each control signal to an inactive value, should have a null effect on the pipeline
                 rd_reg_offset_next = 5'd0;

@@ -62,31 +62,31 @@ module alu(
                 alu_result_next = (operand_a - operand_b);
             end
             4'b0011 : begin   // set if less than
-                alu_result_next = ($signed(operand_a) < $signed(operand_b)) ? 32'd1 : 32'd0;
+                alu_result_next = ($signed(operand_a) < $signed(operand_b)) ? 33'd1 : 33'd0;
             end
             4'b1011 : begin   // set if less than unsigned
-                alu_result_next = (operand_a < operand_b) ? 32'd1 : 32'd0;
+                alu_result_next = (operand_a < operand_b) ? 33'd1 : 33'd0;
             end
 
             // *** logical operations ***
 
             4'b0100 : begin   // bitwise AND
-                alu_result_next = (operand_a & operand_b);
+                alu_result_next = {1'b0, (operand_a & operand_b)};
             end
             4'b0101 : begin   // bitwise OR
-                alu_result_next = (operand_a | operand_b);
+                alu_result_next = {1'b0, (operand_a | operand_b)};
             end
             4'b0110 : begin   // bitwise XOR
-                alu_result_next = (operand_a ^ operand_b);
+                alu_result_next = {1'b0, (operand_a ^ operand_b)};
             end
             4'b0111 : begin   // shift left logical
-                alu_result_next = (operand_a << operand_b);
+                alu_result_next = {1'b0, (operand_a << operand_b)};
             end
             4'b1000 : begin   // shift right logical
-                alu_result_next = (operand_a >> operand_b);
+                alu_result_next = {1'b0, (operand_a >> operand_b)};
             end
             4'b1001 : begin   // shift right arithmetic
-                alu_result_next = (operand_a >>> operand_b);
+                alu_result_next = {1'b0, (operand_a >>> operand_b)};
             end
             
             default : begin   // invalid op_val, pipeline may be being filled (starting from reset) -> do nothing

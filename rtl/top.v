@@ -227,7 +227,7 @@ module top(
         .clk(clk), 
         .rst_n(rst_n), 
         .halt(halt),
-        .signed_unsigned_n(signed_unsigned_n), // TODO: needs connecting
+        .signed_unsigned_n(1'b0), // TODO: needs connecting... What does this do again?
         .jump_instruction(update_pc_1c),
         .op_val(alu_operation_code),
         .operand_a(alu_input_a), 
@@ -251,10 +251,10 @@ module top(
                 mem_access_data_out_bus_adjusted = rs2_data_out_2c;
             end
             3'b010 : begin   // SIGNED HALFWORD
-                mem_access_data_out_bus_adjusted = $signed(rs2_data_out_2c[15:0]);
+                mem_access_data_out_bus_adjusted = { {16{rs2_data_out_2c[15]}}, $signed(rs2_data_out_2c[15:0])};
             end
             3'b100 : begin   // SIGNED BYTE
-                mem_access_data_out_bus_adjusted = $signed(rs2_data_out_2c[7:0]);
+                mem_access_data_out_bus_adjusted = { {24{rs2_data_out_2c[7]}}, $signed(rs2_data_out_2c[7:0])};
             end
             default : begin
                 mem_access_data_out_bus_adjusted = 32'h0;
@@ -270,7 +270,7 @@ module top(
                 // read the value from the data bus into mem_data_next (latched on next clock edge), performed at top of code
                 
                 mem_access_read_wrn = 1'b1;
-                mem_access_address_bus = alu_output;
+                mem_access_address_bus = alu_output[15:0];
                 mem_access_done = 1'b1;  // TODO: check in TB what happens when this is removed
             end
             2'b01 : begin   // MEM STORE
@@ -279,7 +279,7 @@ module top(
                 // write the value to the data bus to RAM (latched on next clock edge)
 
                 mem_access_read_wrn = 1'b0;
-                mem_access_address_bus = alu_output;
+                mem_access_address_bus = alu_output[15:0];
                 mem_access_data_out_bus = mem_access_data_out_bus_adjusted;
                 
             end
@@ -307,16 +307,16 @@ module top(
                 mem_data_adjusted = mem_data_1c;
             end
             3'b001 : begin   // UNSIGNED HALFWORD
-                mem_data_adjusted = mem_data_1c[15:0];
+                mem_data_adjusted = {16'd0, mem_data_1c[15:0]};
             end
             3'b010 : begin   // SIGNED HALFWORD
-                mem_data_adjusted = $signed(mem_data_1c[15:0]);
+                mem_data_adjusted = {{16{mem_data_1c[15]}}, $signed(mem_data_1c[15:0])};
             end
             3'b011 : begin   // UNSIGNED BYTE
-                mem_data_adjusted = mem_data_1c[7:0];
+                mem_data_adjusted = {24'd0, mem_data_1c[7:0]};
             end
             3'b100 : begin   // SIGNED BYTE
-                mem_data_adjusted = $signed(mem_data_1c[7:0]);
+                mem_data_adjusted = {{24{mem_data_1c[7]}}, $signed(mem_data_1c[7:0])};
             end
             default : begin
                 mem_data_adjusted = 32'd0;

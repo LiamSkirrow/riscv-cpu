@@ -26,8 +26,8 @@ module reg_file(
     // FIXME: I want to rewrite this entire module... it's a bit crusty XD
     
     // local signals
-    // TODO: whats the deal with 33 registers? The 33rd can't be reached since rd_reg_offset is only 5 bits
-    reg [31:0] register_file [0:32];
+    reg [31:0] register_file [0:31];
+    reg [31:0] pc_reg;
     integer i;
     
     //***********************
@@ -84,7 +84,7 @@ module reg_file(
             register_file[29] <= 32'd0;
             register_file[30] <= 32'd0;
             register_file[31] <= 32'd0;
-            register_file[32] <= 32'd0;
+            pc_reg            <= 32'd0;
         end
         else begin
             if(!halt) begin
@@ -94,16 +94,16 @@ module reg_file(
                 if(!update_pc) begin
                     // PC needs to stay constant and not increment
                     if(freeze_pc) begin
-                        register_file[32] <= register_file[32];
+                        pc_reg <= pc_reg;
                     end
                     else begin
-                        register_file[32] <= register_file[32] + 32'd4;
+                        pc_reg <= pc_reg + 32'd4;
                     end
                 end
                 // jump instruction is occurring, need to update the PC to the new value
                 else begin
-                    register_file[32]            <= reg_data_in;               // update the PC, thus completing the Jump/Branch
-                    register_file[rd_reg_offset] <= register_file[32] + 32'd4; // write PC+4 to the link register, could be x0 in case of no link
+                    pc_reg <= reg_data_in;               // update the PC, thus completing the Jump/Branch
+                    register_file[rd_reg_offset] <= pc_reg + 32'd4; // write PC+4 to the link register, could be x0 in case of no link
                 end
 
                 //only write to a register in the range of x1-x31 (+ PC). Don't write to the zero register x0.
@@ -117,6 +117,6 @@ module reg_file(
     //top-level assigns
     assign rs1_data_out = register_file[rs1_reg_offset];
     assign rs2_data_out = register_file[rs2_reg_offset];
-    assign pc_data_out  = register_file[32];
+    assign pc_data_out  = pc_reg;
 
 endmodule 
