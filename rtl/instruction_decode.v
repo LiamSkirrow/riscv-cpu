@@ -23,7 +23,7 @@ module instruction_decode(
     output reg [4:0]  rs2_reg_offset,
     output reg [31:0] alu_input_a,
     output reg [31:0] alu_input_b,
-    output reg [3:0]  alu_operation_code_reg,
+    output reg [3:0]  alu_operation_code,
     output reg [1:0]  mem_access_operation_next,
     output reg        alu_mem_operation_n_next,
     output reg        reg_wb_flag_next,
@@ -42,6 +42,7 @@ module instruction_decode(
 
     reg [31:0] alu_input_a_reg, alu_input_b_reg;
     reg branch_conditional_check;
+    reg [3:0] alu_operation_code_reg;
 
     // FIXME: UP TO HERE!!!
     //        it seems that creating output regs causes it to infer synchronous elements whereas I want
@@ -51,12 +52,14 @@ module instruction_decode(
     // latch the ALU input operands, pass out to ALU
     always @(posedge clk or negedge rst_n) begin
         if(!rst_n) begin
+            alu_operation_code <= 4'd0;
             alu_input_a <= 32'd0;
             alu_input_b <= 32'd0;
         end
         else begin
-            alu_input_a <= alu_input_a_reg;
-            alu_input_b <= alu_input_b_reg;          
+            alu_operation_code <= alu_operation_code_reg;
+            alu_input_a        <= alu_input_a_reg;
+            alu_input_b        <= alu_input_b_reg;          
         end      
     end
 

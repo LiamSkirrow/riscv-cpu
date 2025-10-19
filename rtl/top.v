@@ -204,7 +204,7 @@ module top(
         .rs2_reg_offset(rs2_reg_offset), 
         .alu_input_a(alu_input_a),
         .alu_input_b(alu_input_b), 
-        .alu_operation_code_reg(alu_operation_code), 
+        .alu_operation_code(alu_operation_code), 
         .mem_access_operation_next(mem_access_operation_next),
         .alu_mem_operation_n_next(alu_mem_operation_n_next), 
         .reg_wb_flag_next(reg_wb_flag_next), 
