@@ -20,7 +20,9 @@ module top(
     output wire        DMEM_READ_WRN,       // control signal to RAM register block indicating whether a read or write
     output wire [15:0] DMEM_ADDRESS_BUS,    // RAM register block address bus
     input  wire [31:0] DMEM_DATA_IN_BUS,    // RAM register block data input bus
-    output wire [31:0] DMEM_DATA_OUT_BUS    // RAM register block data output bus
+    output wire [31:0] DMEM_DATA_OUT_BUS,   // RAM register block data output bus
+    
+    output wire        breakpoint_fired     // breakpoint status bit
     );
         
     // instruction fetch
@@ -61,6 +63,9 @@ module top(
     reg [4:0]  rs1_reg_offset, rs2_reg_offset, rd_reg_offset;
     reg [31:0] rd_reg_data_1c;
     reg freeze_pc_reg;
+    // debug
+    reg breakpoint_flag_3c, breakpoint_flag_2c, breakpoint_flag_1c;
+    wire breakpoint_flag_next;
 
     // wires for the instruction decoder
     wire        update_pc_next;
@@ -126,6 +131,10 @@ module top(
             update_pc_3c <= 1'b0;
             update_pc_2c <= 1'b0;
             update_pc_1c <= 1'b0;
+
+            breakpoint_flag_3c <= 1'b0;
+            breakpoint_flag_2c <= 1'b0;
+            breakpoint_flag_1c <= 1'b0;
         end
         else begin
             // only update the registers if halt is not active
@@ -158,6 +167,10 @@ module top(
                 update_pc_3c <= update_pc_2c;
                 update_pc_2c <= update_pc_1c;
                 update_pc_1c <= update_pc_next;
+
+                breakpoint_flag_3c <= breakpoint_flag_2c;
+                breakpoint_flag_2c <= breakpoint_flag_1c;
+                breakpoint_flag_1c <= breakpoint_flag_next;
             end
         end
     end
@@ -215,7 +228,8 @@ module top(
         .rd_reg_offset_1c(rd_reg_offset_1c), 
         .rd_reg_offset_2c(rd_reg_offset_2c), 
         .rd_reg_offset_3c(rd_reg_offset_3c),
-        .alu_out_reg_1c(alu_out_reg_1c)
+        .alu_out_reg_1c(alu_out_reg_1c),
+        .breakpoint_flag_next(breakpoint_flag_next)
     );
 
 
@@ -337,6 +351,9 @@ module top(
             reg_data_in = 32'd0;
         end
     end
+
+    // EBREAK instruction has finished travelling down the pipeline, ready to be fired
+    assign breakpoint_fired = breakpoint_flag_3c;
 
     assign DMEM_READ_WRN = mem_access_read_wrn;    
     assign DMEM_ADDRESS_BUS = mem_access_address_bus;
