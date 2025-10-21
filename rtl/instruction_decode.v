@@ -29,7 +29,8 @@ module instruction_decode(
     output reg        reg_wb_flag_next,
     output reg [2:0]  reg_wb_data_type_next,
     output reg [31:0] rs2_data_out_next,
-    output reg        breakpoint_flag_next
+    output reg        breakpoint_flag_next,
+    output reg        bubble_detect_next
 );
 
     wire rd_register_rs1_in_flight_one_cycle;
@@ -406,6 +407,8 @@ module instruction_decode(
                 
                 // TODO: add bubble flag here (set to 1), pass it down the pipeline and use it to 
                 //       detect whether instructions are being retired or not
+
+                bubble_detect_next = 1'b1;
 
             end
 

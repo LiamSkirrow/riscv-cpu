@@ -22,11 +22,13 @@ module top(
     input  wire [31:0] DMEM_DATA_IN_BUS,    // RAM register block data input bus
     output wire [31:0] DMEM_DATA_OUT_BUS,   // RAM register block data output bus
     
-    output wire        breakpoint_fired     // breakpoint status bit
+    output wire        breakpoint_fired,    // breakpoint status bit
+    output wire        instruction_retired  // instruction retired flag
     );
         
     // instruction fetch
     reg [31:0] program_counter_reg, instruction_pointer_reg, instruction_pointer_reg_1c;
+    reg [6:0]  instruction_pointer_reg_2c, instruction_pointer_reg_3c, instruction_pointer_reg_4c;
     // register file
     wire reg_rd_wrn;
     reg  [31:0] reg_data_in;
@@ -66,6 +68,8 @@ module top(
     // debug
     reg breakpoint_flag_3c, breakpoint_flag_2c, breakpoint_flag_1c;
     wire breakpoint_flag_next;
+    // reg bubble_detect_flag_3c, bubble_detect_flag_2c, bubble_detect_flag_1c;
+    wire bubble_detect_next;
 
     // wires for the instruction decoder
     wire        update_pc_next;
@@ -135,6 +139,10 @@ module top(
             breakpoint_flag_3c <= 1'b0;
             breakpoint_flag_2c <= 1'b0;
             breakpoint_flag_1c <= 1'b0;
+
+            // bubble_detect_flag_3c <= 1'b0;
+            // bubble_detect_flag_2c <= 1'b0;
+            // bubble_detect_flag_1c <= 1'b0;
         end
         else begin
             // only update the registers if halt is not active
@@ -171,6 +179,10 @@ module top(
                 breakpoint_flag_3c <= breakpoint_flag_2c;
                 breakpoint_flag_2c <= breakpoint_flag_1c;
                 breakpoint_flag_1c <= breakpoint_flag_next;
+
+                // bubble_detect_flag_3c <= bubble_detect_flag_2c;
+                // bubble_detect_flag_2c <= bubble_detect_flag_1c;
+                // bubble_detect_flag_1c <= bubble_detect_next;
             end
         end
     end
@@ -185,11 +197,17 @@ module top(
     always @(posedge clk or negedge rst_n) begin
         if(!rst_n) begin 
             freeze_pc_reg              <= 1'b0;
+            instruction_pointer_reg_4c <= 7'd0;   // opcode is all we need here
+            instruction_pointer_reg_3c <= 7'd0;   // opcode is all we need here
+            instruction_pointer_reg_2c <= 7'd0;   // opcode is all we need here
             instruction_pointer_reg_1c <= 32'd0;
             instruction_pointer_reg    <= 32'd0;
         end
         else begin
             freeze_pc_reg              <= freeze_pc;
+            instruction_pointer_reg_4c <= instruction_pointer_reg_3c;
+            instruction_pointer_reg_3c <= instruction_pointer_reg_2c;
+            instruction_pointer_reg_2c <= instruction_pointer_reg_1c[6:0];
             instruction_pointer_reg_1c <= instruction_pointer_reg;
             instruction_pointer_reg    <= freeze_pc_reg ? {24'd0, 8'h13} : IMEM_DATA_BUS;
                                                         // ^ADDI x0, x0, 0 => NOP
@@ -229,7 +247,8 @@ module top(
         .rd_reg_offset_2c(rd_reg_offset_2c), 
         .rd_reg_offset_3c(rd_reg_offset_3c),
         .alu_out_reg_1c(alu_out_reg_1c),
-        .breakpoint_flag_next(breakpoint_flag_next)
+        .breakpoint_flag_next(breakpoint_flag_next),
+        .bubble_detect_next(bubble_detect_next)
     );
 
 
@@ -353,7 +372,9 @@ module top(
     end
 
     // EBREAK instruction has finished travelling down the pipeline, ready to be fired
-    assign breakpoint_fired = breakpoint_flag_3c;
+    assign breakpoint_fired    = breakpoint_flag_3c;
+    // single step instruction flag
+    assign instruction_retired = (instruction_pointer_reg_4c != 7'd0);
 
     assign DMEM_READ_WRN = mem_access_read_wrn;    
     assign DMEM_ADDRESS_BUS = mem_access_address_bus;
