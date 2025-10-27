@@ -23,7 +23,8 @@ module top(
     output wire [31:0] DMEM_DATA_OUT_BUS,   // RAM register block data output bus
     
     output wire        breakpoint_fired,    // breakpoint status bit
-    output wire        instruction_retired  // instruction retired flag
+    output wire        instruction_retired, // instruction retired flag
+    output wire        finish_exec_signal   // finish execution
     );
         
     // instruction fetch
@@ -70,6 +71,8 @@ module top(
     wire breakpoint_flag_next;
     // reg bubble_detect_flag_3c, bubble_detect_flag_2c, bubble_detect_flag_1c;
     wire bubble_detect_next;
+    reg finish_exec_flag_3c, finish_exec_flag_2c, finish_exec_flag_1c;
+    wire finish_exec_next;
 
     // wires for the instruction decoder
     wire        update_pc_next;
@@ -143,6 +146,10 @@ module top(
             // bubble_detect_flag_3c <= 1'b0;
             // bubble_detect_flag_2c <= 1'b0;
             // bubble_detect_flag_1c <= 1'b0;
+
+            finish_exec_flag_3c <= 1'b0;
+            finish_exec_flag_2c <= 1'b0;
+            finish_exec_flag_1c <= 1'b0;
         end
         else begin
             // only update the registers if halt is not active
@@ -183,6 +190,10 @@ module top(
                 // bubble_detect_flag_3c <= bubble_detect_flag_2c;
                 // bubble_detect_flag_2c <= bubble_detect_flag_1c;
                 // bubble_detect_flag_1c <= bubble_detect_next;
+
+                finish_exec_flag_3c <= finish_exec_flag_2c;
+                finish_exec_flag_2c <= finish_exec_flag_1c;
+                finish_exec_flag_1c <= finish_exec_next;
             end
         end
     end
@@ -251,7 +262,8 @@ module top(
         .rd_reg_offset_3c(rd_reg_offset_3c),
         .alu_out_reg_1c(alu_out_reg_1c),
         .breakpoint_flag_next(breakpoint_flag_next),
-        .bubble_detect_next(bubble_detect_next)
+        .bubble_detect_next(bubble_detect_next),
+        .finish_exec_next(finish_exec_next)
     );
 
 
@@ -378,6 +390,8 @@ module top(
     assign breakpoint_fired    = breakpoint_flag_3c;
     // single step instruction flag
     assign instruction_retired = (instruction_pointer_reg_4c != 7'd0);
+    // fire finish program signal
+    assign finish_exec_signal = finish_exec_flag_3c;
 
     assign DMEM_READ_WRN = mem_access_read_wrn;    
     assign DMEM_ADDRESS_BUS = mem_access_address_bus;

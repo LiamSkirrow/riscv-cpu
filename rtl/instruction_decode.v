@@ -31,7 +31,8 @@ module instruction_decode(
     output reg [2:0]  reg_wb_data_type_next,
     output reg [31:0] rs2_data_out_next,
     output reg        breakpoint_flag_next,
-    output reg        bubble_detect_next
+    output reg        bubble_detect_next,
+    output reg        finish_exec_next
 );
 
     wire rd_register_rs1_in_flight_one_cycle;
@@ -121,20 +122,21 @@ module instruction_decode(
 
     always @(*) begin
         // set sensible (inactive) default values for all registers
-        branch_conditional_check = 1'b0;
-        update_pc_next = 1'b0;
-        rd_reg_offset_next = 5'd0;
-        rs1_reg_offset = 5'd0;
-        rs2_reg_offset = 5'd0;
-        alu_input_a_reg = 32'd0;
-        alu_input_b_reg = 32'd0;
-        alu_operation_code_reg = 4'b0000;
+        branch_conditional_check  = 1'b0;
+        update_pc_next            = 1'b0;
+        rd_reg_offset_next        = 5'd0;
+        rs1_reg_offset            = 5'd0;
+        rs2_reg_offset            = 5'd0;
+        alu_input_a_reg           = 32'd0;
+        alu_input_b_reg           = 32'd0;
+        alu_operation_code_reg    = 4'b0000;
         mem_access_operation_next = `MEM_NOP;
-        alu_mem_operation_n_next = 1'b0;
-        reg_wb_flag_next = 1'b0;
-        reg_wb_data_type_next = `REG_WB_WORD;
-        rs2_data_out_next = 32'd0;
-        breakpoint_flag_next = 1'b0;
+        alu_mem_operation_n_next  = 1'b0;
+        reg_wb_flag_next          = 1'b0;
+        reg_wb_data_type_next     = `REG_WB_WORD;
+        rs2_data_out_next         = 32'd0;
+        breakpoint_flag_next      = 1'b0;
+        finish_exec_next          = 1'b0;
 
         case (instruction_pointer_reg[6:0])
             7'b011_0111 : begin   // LUI
@@ -408,12 +410,11 @@ module instruction_decode(
             end
 
             7'b000_0000 : begin   // PIPELINE BUBBLE STATE
-                
-                // TODO: add bubble flag here (set to 1), pass it down the pipeline and use it to 
-                //       detect whether instructions are being retired or not
-
                 bubble_detect_next = 1'b1;
+            end
 
+            7'b111_1111 : begin   // FINISH EXECUTION
+                finish_exec_next = 1'b1;
             end
 
             default : begin   // UNRECOGNISED OPCODE STATE
