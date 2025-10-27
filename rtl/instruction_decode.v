@@ -7,6 +7,7 @@
 module instruction_decode(
     input             clk,
     input             rst_n,
+    input             halt,
     input      [31:0] instruction_pointer_reg,
     input      [31:0] rs1_data_out,
     input      [31:0] rs2_data_out,
@@ -59,9 +60,12 @@ module instruction_decode(
             alu_input_b <= 32'd0;
         end
         else begin
-            alu_operation_code <= alu_operation_code_reg;
-            alu_input_a        <= alu_input_a_reg;
-            alu_input_b        <= alu_input_b_reg;          
+            // only update the registers if halt is not active
+            if(!halt) begin
+                alu_operation_code <= alu_operation_code_reg;
+                alu_input_a        <= alu_input_a_reg;
+                alu_input_b        <= alu_input_b_reg;
+            end
         end      
     end
 

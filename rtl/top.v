@@ -204,16 +204,18 @@ module top(
             instruction_pointer_reg    <= 32'd0;
         end
         else begin
-            freeze_pc_reg              <= freeze_pc;
-            instruction_pointer_reg_4c <= instruction_pointer_reg_3c;
-            instruction_pointer_reg_3c <= instruction_pointer_reg_2c;
-            instruction_pointer_reg_2c <= instruction_pointer_reg_1c[6:0];
-            instruction_pointer_reg_1c <= instruction_pointer_reg;
-            instruction_pointer_reg    <= freeze_pc_reg ? {24'd0, 8'h13} : IMEM_DATA_BUS;
-                                                        // ^ADDI x0, x0, 0 => NOP
-                                                        // 000000000000 00000 000 0000 00010011
-            // FIXME: consider moving this mux after the fetch pipeline registers so that we can reuse it for the non-forwarding logic
-            //        refer to diagram in book...
+            if(!halt) begin
+                freeze_pc_reg              <= freeze_pc;
+                instruction_pointer_reg_4c <= instruction_pointer_reg_3c;
+                instruction_pointer_reg_3c <= instruction_pointer_reg_2c;
+                instruction_pointer_reg_2c <= instruction_pointer_reg_1c[6:0];
+                instruction_pointer_reg_1c <= instruction_pointer_reg;
+                instruction_pointer_reg    <= freeze_pc_reg ? {24'd0, 8'h13} : IMEM_DATA_BUS;
+                                                            // ^ADDI x0, x0, 0 => NOP
+                                                            // 000000000000 00000 000 0000 00010011
+                // FIXME: consider moving this mux after the fetch pipeline registers so that we can reuse it for the non-forwarding logic
+                //        refer to diagram in book...
+            end
         end
     end
 
@@ -225,6 +227,7 @@ module top(
     instruction_decode u_inst_decode(
         .clk(clk), 
         .rst_n(rst_n),
+        .halt(halt),
         .instruction_pointer_reg(instruction_pointer_reg), 
         .rs1_data_out(rs1_data_out), 
         .rs2_data_out(rs2_data_out),
