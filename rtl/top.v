@@ -24,7 +24,8 @@ module top(
     
     output wire        breakpoint_fired,    // breakpoint status bit
     output wire        instruction_retired, // instruction retired flag
-    output wire        finish_exec_signal   // finish execution
+    output wire        finish_exec_signal,  // finish execution
+    output wire [31:0][31:0] reg_dump_debug // debugger connection of register file
     );
         
     // instruction fetch
@@ -102,7 +103,8 @@ module top(
         .pc_data_out(pc_data_out), 
         .update_pc(update_pc_3c),
         .freeze_pc(freeze_pc), 
-        .halt(halt)
+        .halt(halt),
+        .reg_dump_debug(reg_dump_debug) // TODO: make this connection parameterised since it's a lot of wires
     );
     
     // ******************

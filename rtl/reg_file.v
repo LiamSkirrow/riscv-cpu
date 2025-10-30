@@ -20,7 +20,8 @@ module reg_file(
     
     output wire [31:0] rs1_data_out,
     output wire [31:0] rs2_data_out,
-    output wire [31:0] pc_data_out
+    output wire [31:0] pc_data_out,
+    output wire [31:0][31:0] reg_dump_debug
     );
 
     // FIXME: I want to rewrite this entire module... it's a bit crusty XD
@@ -28,22 +29,11 @@ module reg_file(
     // local signals
     reg [31:0] register_file [0:31];
     reg [31:0] pc_reg;
-    integer i;
     
-    //***********************
-    //Register Read Procedure
-    //***********************
-    // always @(*) begin
-    //     if(reg_rd_wrn) begin
-    //         //access the register at the address offset
-    //         rs1_data_out <= register_file[rs1_reg_offset];
-    //         rs2_data_out <= register_file[rs2_reg_offset];
-    //     end
-    //     else begin
-    //         rs1_data_out = 32'b0;
-    //         rs2_data_out = 32'b0;
-    //     end
-    // end
+    // connect debug signals
+    for(genvar i = 0; i < 32; i++) begin
+        assign reg_dump_debug[i] = register_file[i];
+    end
     
     //************************
     //Register Write Procedure
@@ -52,6 +42,7 @@ module reg_file(
         if(!rst_n) begin
             // reset all registers to zero... 
             // FIXME: I can't get for loops working with Verilator?
+            // TODO: TODO: TODO: try again but with genvar rather than integer
             register_file[0]  <= 32'd0; 
             register_file[1]  <= 32'd0; 
             register_file[2]  <= 32'd0; 
