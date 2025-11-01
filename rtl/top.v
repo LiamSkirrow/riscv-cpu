@@ -25,7 +25,8 @@ module top(
     output wire        breakpoint_fired,    // breakpoint status bit
     output wire        instruction_retired, // instruction retired flag
     output wire        finish_exec_signal,  // finish execution
-    output wire [31:0][31:0] reg_dump_debug // debugger connection of register file
+    output wire [31:0][31:0] reg_dump_debug,// debugger connection of register file
+    output wire        unrecognised_opcode_flag
     );
         
     // instruction fetch
@@ -104,7 +105,7 @@ module top(
         .update_pc(update_pc_3c),
         .freeze_pc(freeze_pc), 
         .halt(halt),
-        .reg_dump_debug(reg_dump_debug) // TODO: make this connection parameterised since it's a lot of wires
+        .reg_dump_debug(reg_dump_debug)  // TODO: make this connection parameterised since it's a lot of wires
     );
     
     // ******************
@@ -265,7 +266,8 @@ module top(
         .alu_out_reg_1c(alu_out_reg_1c),
         .breakpoint_flag_next(breakpoint_flag_next),
         .bubble_detect_next(bubble_detect_next),
-        .finish_exec_next(finish_exec_next)
+        .finish_exec_next(finish_exec_next),
+        .unrecognised_opcode_flag(unrecognised_opcode_flag)
     );
 
 

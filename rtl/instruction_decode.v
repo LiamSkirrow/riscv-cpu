@@ -32,7 +32,8 @@ module instruction_decode(
     output reg [31:0] rs2_data_out_next,
     output reg        breakpoint_flag_next,
     output reg        bubble_detect_next,
-    output reg        finish_exec_next
+    output reg        finish_exec_next,
+    output reg        unrecognised_opcode_flag
 );
 
     wire rd_register_rs1_in_flight_one_cycle;
@@ -137,6 +138,7 @@ module instruction_decode(
         rs2_data_out_next         = 32'd0;
         breakpoint_flag_next      = 1'b0;
         finish_exec_next          = 1'b0;
+        unrecognised_opcode_flag  = 1'b0;
 
         case (instruction_pointer_reg[6:0])
             7'b011_0111 : begin   // LUI
@@ -420,6 +422,7 @@ module instruction_decode(
             default : begin   // UNRECOGNISED OPCODE STATE
                 
                 //TODO: set illegal opcode exception flag
+                unrecognised_opcode_flag = 1'b1;
                 
             end
         endcase
